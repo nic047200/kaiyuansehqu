@@ -43,7 +43,7 @@ const { pathToFileURL } = require("url");
   await page.locator('#taskPage [data-task="task-soda"]').click();
   await page.waitForSelector("#surveyScreen.active .concept-shell");
   const navCount = await page.locator(".answer-thumb").count();
-  if (navCount < 1 || navCount > 10) throw new Error(`expected 1-10 random answer cards, got ${navCount}`);
+  if (navCount !== 10) throw new Error(`expected 10 answer cards by default, got ${navCount}`);
   const navText = await page.locator(".survey-meta").textContent();
   if (!/第\s*1\s*\/\s*\d+\s*张/.test(navText) || !navText.includes("人参与")) throw new Error(`bad survey meta ${navText}`);
 
@@ -57,10 +57,22 @@ const { pathToFileURL } = require("url");
   const activeThumb = await page.locator(".answer-thumb.current").boundingBox();
   const navBox = await page.locator(".thumbs").boundingBox();
   if (!activeThumb || !navBox) throw new Error("missing active thumb metrics");
-  const activeCenter = activeThumb.x + activeThumb.width / 2;
-  const navCenter = navBox.x + navBox.width / 2;
-  if (Math.abs(activeCenter - navCenter) > 18) throw new Error(`current thumb should be centered ${JSON.stringify({activeCenter, navCenter})}`);
-  if (activeThumb.width < 62) throw new Error(`current thumb should be enlarged ${JSON.stringify(activeThumb)}`);
+  if (activeThumb.x - navBox.x > 8) throw new Error(`thumb navigation should start left aligned ${JSON.stringify({activeThumb, navBox})}`);
+  const appCenter = navBox.x + navBox.width / 2;
+  for (const selector of [".survey-pill", "#surveyMeta"]) {
+    const box = await page.locator(selector).boundingBox();
+    if (!box) throw new Error(`missing centered element ${selector}`);
+    const center = box.x + box.width / 2;
+    if (Math.abs(center - appCenter) > 8) throw new Error(`${selector} should be centered ${JSON.stringify({center, appCenter, box})}`);
+  }
+  const feedbackTitleMetrics = await page.locator(".feedback-block .question-title").evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    const style = getComputedStyle(el);
+    return { height: box.height, lineHeight: Number.parseFloat(style.lineHeight), fontSize: Number.parseFloat(style.fontSize), scrollWidth: el.scrollWidth, clientWidth: el.clientWidth };
+  });
+  if (feedbackTitleMetrics.height > feedbackTitleMetrics.lineHeight * 1.35 || feedbackTitleMetrics.fontSize > 14) {
+    throw new Error(`feedback title should be smaller and one line ${JSON.stringify(feedbackTitleMetrics)}`);
+  }
   await page.evaluate(() => showToast("测试提示"));
   await page.waitForSelector("#toast.show");
   const toastBox = await page.locator("#toast").boundingBox();

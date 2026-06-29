@@ -29,18 +29,17 @@ test("prioritizes demos with fewer valid participants and filters unavailable de
   const demos = getAvailableDemos(state, "user-demo", "task-soda", () => 0.5);
   const ids = demos.map((demo) => demo.id);
 
-  assert.deepStrictEqual(ids.slice(0, 3), ["soda-02", "soda-05", "soda-01"]);
-  assert(!ids.includes("soda-09"));
-  assert(!ids.includes("soda-10"));
+  assert.deepStrictEqual(ids.slice(0, 3), ["soda-02", "soda-05", "soda-09"]);
+  assert(!ids.includes("soda-11"));
+  assert(!ids.includes("soda-12"));
 });
 
-test("creates a stable random task session with one to ten cards", () => {
+test("creates a stable task session with ten cards by default", () => {
   const state = createSurveyState();
-  const session = startTaskSession(state, "user-demo", "task-soda", sequence([0.24, 0.5, 0.5, 0.5]));
+  const session = startTaskSession(state, "user-demo", "task-soda", sequence([0.5, 0.5, 0.5, 0.5]));
   const again = startTaskSession(state, "user-demo", "task-soda", () => 0.99);
 
-  assert(session.demoIds.length >= 1 && session.demoIds.length <= 10);
-  assert.strictEqual(session.demoIds.length, 2);
+  assert.strictEqual(session.demoIds.length, 10);
   assert.deepStrictEqual(again.demoIds, session.demoIds);
 });
 
@@ -117,7 +116,7 @@ test("reports task progress as answered and unanswered card counts", () => {
 
   const progress = getTaskProgress(state, "user-demo", "task-soda");
   assert.strictEqual(progress.answered, 1);
-  assert.strictEqual(progress.unanswered, 0);
+  assert.strictEqual(progress.unanswered, 9);
 });
 
 if (process.exitCode) {

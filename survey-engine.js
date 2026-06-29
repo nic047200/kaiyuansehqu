@@ -97,8 +97,10 @@
       demo("soda-06", "task-soda", "橙意满满维 C 泡泡", "橙橙气泡", "橙味气泡水", "维 C 卖点突出，酸甜平衡。", "¥6元", "480mL", 63, "online", "#f97316", "orange"),
       demo("soda-07", "task-soda", "荔枝玫瑰轻气泡", "荔枝玫瑰", "花果味气泡饮", "花香柔和，适合女性用户场景。", "¥9元", "380mL", 74, "online", "#ec4899", "lychee"),
       demo("soda-08", "task-soda", "西柚盐汽水", "西柚盐汽", "电解质气泡水", "运动场景补充盐分，口感清冽。", "¥6元", "500mL", 88, "online", "#fb7185", "grapefruit"),
-      demo("soda-09", "task-soda", "未上线碳酸卡", "草稿", "草稿", "不应展示。", "-", "-", 1, "draft", "#999999", "draft"),
-      demo("soda-10", "task-soda", "已收满碳酸卡", "收满", "收满", "不应展示。", "-", "-", 100, "online", "#aaaaaa", "full"),
+      demo("soda-09", "task-soda", "菠萝海盐气泡水", "菠萝海盐", "热带气泡饮", "菠萝香气明显，海盐带来清爽尾调。", "¥7元", "450mL", 9, "online", "#facc15", "pineapple"),
+      demo("soda-10", "task-soda", "雪梨白茶气泡饮", "梨白白", "茶味气泡饮", "白茶清香搭配雪梨甜感，低负担。", "¥8元", "420mL", 16, "online", "#86efac", "pear"),
+      demo("soda-11", "task-soda", "未上线碳酸卡", "草稿", "草稿", "不应展示。", "-", "-", 1, "draft", "#999999", "draft"),
+      demo("soda-12", "task-soda", "已收满碳酸卡", "收满", "收满", "不应展示。", "-", "-", 100, "online", "#aaaaaa", "full"),
       demo("coffee-01", "task-coffee", "小黄油拿铁", "JUST LATTE", "黄油拿铁", "冷萃拿铁 100% 深烘豆，奶香顺滑。", "¥5元", "400mL", 8, "online", "#f5b84b", "butter"),
       demo("coffee-02", "task-coffee", "一只小羊冷萃拿铁", "LAMBY CAFF", "冷萃拿铁", "经典冷萃，灵感咖啡。", "¥5元", "250mL", 8, "online", "#c8a27a", "latte"),
       demo("coffee-03", "task-coffee", "厚乳冰拿铁", "厚乳研究所", "厚乳咖啡", "奶感更强，入口顺滑不苦。", "¥8元", "300mL", 18, "online", "#b08968", "milk"),
@@ -170,7 +172,7 @@
     if (existing) return existing;
     const random = rng || Math.random;
     const maxCount = Math.min(10, state.demos.filter((demo) => isDemoAvailable(state, userId, taskId, demo)).length);
-    const count = maxCount ? Math.max(1, Math.ceil(random() * maxCount)) : 0;
+    const count = maxCount;
     const available = getAvailableDemos(state, userId, taskId, random);
     const session = {
       id: `${taskId}-${userId}-${Date.now()}-${state.sessions.length + 1}`,
