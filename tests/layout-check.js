@@ -14,11 +14,20 @@ const { pathToFileURL } = require("url");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
   await page.waitForSelector(".task-card");
-  const homeMetrics = await page.evaluate(() => ({
-    scrollWidth: document.documentElement.scrollWidth,
-    clientWidth: document.documentElement.clientWidth,
-    cards: [...document.querySelectorAll(".task-card")].map((el) => el.getBoundingClientRect().width)
-  }));
+  const homeMetrics = await page.evaluate(() => {
+    const title = document.querySelector(".hero h1").getBoundingClientRect();
+    const style = getComputedStyle(document.querySelector(".hero h1"));
+    return {
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+      titleHeight: title.height,
+      titleLineHeight: Number.parseFloat(style.lineHeight),
+      titleText: document.querySelector(".hero h1").textContent.trim(),
+      cards: [...document.querySelectorAll(".task-card")].map((el) => el.getBoundingClientRect().width)
+    };
+  });
+  if (homeMetrics.titleText !== "概念卡任务调研") throw new Error(`expected single-line title text ${JSON.stringify(homeMetrics)}`);
+  if (homeMetrics.titleHeight > homeMetrics.titleLineHeight * 1.35) throw new Error(`hero title should render as one line ${JSON.stringify(homeMetrics)}`);
   if (homeMetrics.scrollWidth > homeMetrics.clientWidth) throw new Error(`home horizontal overflow ${JSON.stringify(homeMetrics)}`);
   await page.locator('[data-task="task-ai"]').click();
   await page.waitForSelector(".concept-shell");
