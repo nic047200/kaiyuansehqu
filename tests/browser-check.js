@@ -47,6 +47,13 @@ const { pathToFileURL } = require("url");
   const navText = await page.locator(".survey-meta").textContent();
   if (!/第\s*1\s*\/\s*\d+\s*张/.test(navText) || !navText.includes("人参与")) throw new Error(`bad survey meta ${navText}`);
 
+  const posterSrc = await page.locator(".poster-image").first().getAttribute("src");
+  if (!posterSrc || !/assets\/posters\/poster-\d{2}\.(jpg|png)$/.test(posterSrc)) throw new Error(`expected real poster image, got ${posterSrc}`);
+  const loadedPoster = await page.locator(".poster-image").first().evaluate((img) => img.complete && img.naturalWidth > 0 && img.naturalHeight > 0);
+  if (!loadedPoster) throw new Error("poster image should load successfully");
+  const thumbImages = await page.locator(".answer-thumb img").count();
+  if (thumbImages !== 10) throw new Error(`expected 10 poster thumbnails, got ${thumbImages}`);
+
   const questionTitles = await page.locator(".question-title").allTextContents();
   if (questionTitles.length !== 2) throw new Error(`expected both questions on one page, got ${questionTitles.length}`);
   if (!questionTitles[0].includes("这款产品你买吗") || !questionTitles[1].includes("可以改进的点")) throw new Error(`unexpected question titles ${questionTitles.join("|")}`);

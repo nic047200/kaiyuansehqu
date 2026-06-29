@@ -40,7 +40,7 @@
     return { accent, tone };
   }
 
-  function demo(id, taskId, title, brand, category, sellingPoint, price, spec, answerCount, status, accent, tone) {
+  function demo(id, taskId, title, brand, category, sellingPoint, price, spec, answerCount, status, accent, tone, poster) {
     return {
       id,
       taskId,
@@ -54,6 +54,7 @@
       targetAnswers: TARGET_ANSWERS,
       participants: 126 + answerCount,
       status,
+      poster: poster || "",
       art: cardArt(accent, tone),
       questions: makeQuestions(id)
     };
@@ -89,16 +90,16 @@
       }
     ],
     demos: [
-      demo("soda-01", "task-soda", "野果生榨野气十足", "野石榴", "山野碳酸果汁", "爆裂石榴真快气泡，清爽不甜腻。", "¥6元", "400mL", 12, "online", "#d9432f", "berry"),
-      demo("soda-02", "task-soda", "青柠气泡清爽一夏", "青柠汽水", "柠檬味气泡水", "0 糖清爽，适合运动后饮用。", "¥5元", "500mL", 4, "online", "#7ccf55", "lime"),
-      demo("soda-03", "task-soda", "白桃乌龙轻气泡", "桃桃乌龙", "茶味气泡饮", "茶香和果香融合，低甜更轻盈。", "¥7元", "450mL", 27, "online", "#f4a7b9", "peach"),
-      demo("soda-04", "task-soda", "冰镇可乐强爽口感", "黑冰可乐", "经典碳酸饮料", "强气泡、冰爽感和经典焦糖香。", "¥4元", "500mL", 42, "online", "#1f2937", "cola"),
-      demo("soda-05", "task-soda", "葡萄爆珠气泡饮", "紫葡萄", "葡萄味气泡饮", "入口有爆珠层次，果味明显。", "¥8元", "420mL", 4, "online", "#8b5cf6", "grape"),
-      demo("soda-06", "task-soda", "橙意满满维 C 泡泡", "橙橙气泡", "橙味气泡水", "维 C 卖点突出，酸甜平衡。", "¥6元", "480mL", 63, "online", "#f97316", "orange"),
-      demo("soda-07", "task-soda", "荔枝玫瑰轻气泡", "荔枝玫瑰", "花果味气泡饮", "花香柔和，适合女性用户场景。", "¥9元", "380mL", 74, "online", "#ec4899", "lychee"),
-      demo("soda-08", "task-soda", "西柚盐汽水", "西柚盐汽", "电解质气泡水", "运动场景补充盐分，口感清冽。", "¥6元", "500mL", 88, "online", "#fb7185", "grapefruit"),
-      demo("soda-09", "task-soda", "菠萝海盐气泡水", "菠萝海盐", "热带气泡饮", "菠萝香气明显，海盐带来清爽尾调。", "¥7元", "450mL", 9, "online", "#facc15", "pineapple"),
-      demo("soda-10", "task-soda", "雪梨白茶气泡饮", "梨白白", "茶味气泡饮", "白茶清香搭配雪梨甜感，低负担。", "¥8元", "420mL", 16, "online", "#86efac", "pear"),
+      demo("soda-01", "task-soda", "野果生榨野气十足", "野石榴", "山野碳酸果汁", "爆裂石榴真快气泡，清爽不甜腻。", "¥6元", "400mL", 12, "online", "#d9432f", "berry", "assets/posters/poster-01.jpg"),
+      demo("soda-02", "task-soda", "青柠气泡清爽一夏", "青柠汽水", "柠檬味气泡水", "0 糖清爽，适合运动后饮用。", "¥5元", "500mL", 4, "online", "#7ccf55", "lime", "assets/posters/poster-02.jpg"),
+      demo("soda-03", "task-soda", "白桃乌龙轻气泡", "桃桃乌龙", "茶味气泡饮", "茶香和果香融合，低甜更轻盈。", "¥7元", "450mL", 27, "online", "#f4a7b9", "peach", "assets/posters/poster-03.jpg"),
+      demo("soda-04", "task-soda", "冰镇可乐强爽口感", "黑冰可乐", "经典碳酸饮料", "强气泡、冰爽感和经典焦糖香。", "¥4元", "500mL", 42, "online", "#1f2937", "cola", "assets/posters/poster-04.jpg"),
+      demo("soda-05", "task-soda", "葡萄爆珠气泡饮", "紫葡萄", "葡萄味气泡饮", "入口有爆珠层次，果味明显。", "¥8元", "420mL", 4, "online", "#8b5cf6", "grape", "assets/posters/poster-05.jpg"),
+      demo("soda-06", "task-soda", "橙意满满维 C 泡泡", "橙橙气泡", "橙味气泡水", "维 C 卖点突出，酸甜平衡。", "¥6元", "480mL", 63, "online", "#f97316", "orange", "assets/posters/poster-06.jpg"),
+      demo("soda-07", "task-soda", "荔枝玫瑰轻气泡", "荔枝玫瑰", "花果味气泡饮", "花香柔和，适合女性用户场景。", "¥9元", "380mL", 74, "online", "#ec4899", "lychee", "assets/posters/poster-07.jpg"),
+      demo("soda-08", "task-soda", "西柚盐汽水", "西柚盐汽", "电解质气泡水", "运动场景补充盐分，口感清冽。", "¥6元", "500mL", 88, "online", "#fb7185", "grapefruit", "assets/posters/poster-08.jpg"),
+      demo("soda-09", "task-soda", "菠萝海盐气泡水", "菠萝海盐", "热带气泡饮", "菠萝香气明显，海盐带来清爽尾调。", "¥7元", "450mL", 9, "online", "#facc15", "pineapple", "assets/posters/poster-09.png"),
+      demo("soda-10", "task-soda", "雪梨白茶气泡饮", "梨白白", "茶味气泡饮", "白茶清香搭配雪梨甜感，低负担。", "¥8元", "420mL", 16, "online", "#86efac", "pear", "assets/posters/poster-10.jpg"),
       demo("soda-11", "task-soda", "未上线碳酸卡", "草稿", "草稿", "不应展示。", "-", "-", 1, "draft", "#999999", "draft"),
       demo("soda-12", "task-soda", "已收满碳酸卡", "收满", "收满", "不应展示。", "-", "-", 100, "online", "#aaaaaa", "full"),
       demo("coffee-01", "task-coffee", "小黄油拿铁", "JUST LATTE", "黄油拿铁", "冷萃拿铁 100% 深烘豆，奶香顺滑。", "¥5元", "400mL", 8, "online", "#f5b84b", "butter"),

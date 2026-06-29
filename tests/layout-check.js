@@ -36,12 +36,15 @@ const { pathToFileURL } = require("url");
   await page.waitForSelector(".concept-shell");
   const surveyMetrics = await page.evaluate(() => {
     const concept = document.querySelector(".concept-shell").getBoundingClientRect();
+    const poster = document.querySelector(".poster-image").getBoundingClientRect();
     const options = [...document.querySelectorAll(".option")].map((el) => el.getBoundingClientRect());
     return {
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
       conceptTop: concept.top,
       conceptWidth: concept.width,
+      posterWidth: poster.width,
+      posterHeight: poster.height,
       optionWidths: options.map((box) => box.width),
       visibleOptions: options.filter((box) => box.width > 0 && box.height > 0).length
     };
@@ -49,6 +52,7 @@ const { pathToFileURL } = require("url");
   if (surveyMetrics.scrollWidth > surveyMetrics.clientWidth) throw new Error(`survey horizontal overflow ${JSON.stringify(surveyMetrics)}`);
   if (surveyMetrics.visibleOptions !== 6) throw new Error(`expected 6 visible options ${JSON.stringify(surveyMetrics)}`);
   if (surveyMetrics.conceptWidth < 350) throw new Error(`concept card too narrow ${JSON.stringify(surveyMetrics)}`);
+  if (surveyMetrics.posterWidth < 330 || surveyMetrics.posterHeight < 250) throw new Error(`poster image should render visibly ${JSON.stringify(surveyMetrics)}`);
   await browser.close();
   console.log("PASS layout checks");
 })().catch((error) => { console.error(error); process.exit(1); });

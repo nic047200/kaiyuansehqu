@@ -52,6 +52,7 @@ test("each concept card has a six-option choice question and a required feedback
   assert.strictEqual(step.question.options.length, 6);
   assert.strictEqual(step.demo.questions[1].type, "text");
   assert.strictEqual(step.demo.questions[1].placeholder, "请写下具体建议，至少5个字");
+  assert(/^assets\/posters\/poster-\d{2}\.(jpg|png)$/.test(step.demo.poster));
 });
 
 test("submits choice first, then requires text feedback before advancing to next card", () => {

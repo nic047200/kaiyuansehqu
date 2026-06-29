@@ -266,6 +266,8 @@
       background: var(--thumb-color, #fff);
       display: grid;
       place-items: center;
+      overflow: hidden;
+      position: relative;
       color: #fff;
       font-weight: 900;
       box-shadow: 0 8px 16px rgba(126,55,13,.15);
@@ -274,6 +276,8 @@
       transform-origin: center;
       transition: transform .28s cubic-bezier(.2,.8,.2,1), opacity .28s ease, border-color .28s ease;
     }
+    .answer-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .answer-thumb span { position: absolute; inset: auto 5px 4px auto; min-width: 18px; height: 18px; border-radius: 999px; display: grid; place-items: center; background: rgba(17, 24, 39, .68); color: #fff; font-size: 11px; }
     .answer-thumb.current { opacity: 1; border-color: #fff; outline: 2px solid #df6417; transform: scale(1.22); z-index: 1; }
     .answer-thumb.done { opacity: .42; }
 
@@ -289,6 +293,8 @@
     }
 
     .poster { border-radius: 6px; overflow: hidden; background: #fff; }
+    .poster-image-wrap { background: #fff; }
+    .poster-image { width: 100%; max-height: 430px; display: block; object-fit: contain; background: #fff; }
     .poster-art {
       min-height: 292px;
       padding: 22px 20px 18px;
@@ -557,7 +563,8 @@
       els.surveyMeta.textContent = `第 ${Math.min(currentIndex + 1, Math.max(demos.length, 1))} / ${Math.max(demos.length, 1)} 张 · ${participants} 人参与`;
       els.thumbs.innerHTML = demos.map((demo, index) => {
         const done = demo.questions.every((question) => state.answers.some((answer) => answer.userId === userId && answer.demoId === demo.id && answer.questionId === question.id));
-        return `<div class="answer-thumb ${index === currentIndex ? "current" : ""} ${done ? "done" : ""}" style="--thumb-color:${demo.art.accent}">${index + 1}</div>`;
+        const thumb = demo.poster ? `<img src="${demo.poster}" alt="${demo.title}缩略图"><span>${index + 1}</span>` : `<span>${index + 1}</span>`;
+        return `<div class="answer-thumb ${index === currentIndex ? "current" : ""} ${done ? "done" : ""}" style="--thumb-color:${demo.art.accent}">${thumb}</div>`;
       }).join("");
 
     }
@@ -571,12 +578,7 @@
         els.conceptArea.innerHTML = `
           <div class="concept-shell">
             <div class="poster" style="--accent:${demo.art.accent}">
-              <div class="poster-art">
-                <div>
-                  <h2>${demo.title}</h2>
-                  <div class="poster-product"><b>${demo.brand}</b></div>
-                </div>
-              </div>
+              ${demo.poster ? `<div class="poster-image-wrap"><img class="poster-image" src="${demo.poster}" alt="${demo.title}"></div>` : `<div class="poster-art"><div><h2>${demo.title}</h2><div class="poster-product"><b>${demo.brand}</b></div></div></div>`}
               <div class="poster-info">
                 <div class="price"><b>${demo.price}</b><span>${demo.spec}</span></div>
                 <p>${demo.category} · ${demo.sellingPoint}</p>
