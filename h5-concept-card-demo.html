@@ -103,16 +103,32 @@
       letter-spacing: 0;
     }
 
-    .hero p {
-      margin: 12px 0 0;
-      color: rgba(255,255,255,.88);
-      font-size: 15px;
+    .login-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.16);
+      color: rgba(255,255,255,.94);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .login-status::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #54e59a;
+      box-shadow: 0 0 0 4px rgba(84,229,154,.18);
     }
 
     .hero-pill {
       display: inline-flex;
       align-items: center;
-      margin-top: 18px;
+      margin-top: 14px;
       padding: 8px 16px;
       border-radius: 999px;
       background: rgba(255,255,255,.18);
@@ -126,7 +142,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-top: -30px;
+      margin-top: 18px;
       position: relative;
       z-index: 2;
     }
@@ -142,8 +158,16 @@
       padding: 13px 14px;
     }
 
+    .hero .metric {
+      background: rgba(255,255,255,.2);
+      border-color: rgba(255,255,255,.32);
+      box-shadow: 0 12px 30px rgba(115, 55, 18, .18);
+      backdrop-filter: blur(12px);
+    }
+
     .metric b { display: block; font-size: 24px; }
     .metric span { color: var(--muted); font-size: 12px; }
+    .hero .metric b, .hero .metric span { color: #fff; }
 
     .section-title {
       display: flex;
@@ -523,14 +547,14 @@
     <section id="homeScreen" class="screen active">
       <div class="hero">
         <h1>概念卡任务调研</h1>
-        <p>登录开源社区后参与调研，答题记录进入飞书审核链路。</p>
+        <div class="login-status">已登录 · 开源社区用户</div>
         <span class="hero-pill">全部答完，就有机会领奖</span>
-      </div>
-      <div class="content">
         <div class="user-row">
           <div class="metric"><b id="growthValue">0</b><span>成长值</span></div>
           <div class="metric"><b id="vitalityTree">0</b><span>元气树</span></div>
         </div>
+      </div>
+      <div class="content">
         <div id="taskPage" class="home-page active">
           <div class="section-title"><span>任务卡</span><small>低完成度优先分发</small></div>
           <div id="taskList" class="task-list"></div>
@@ -632,13 +656,12 @@
           <div class="task-card-top">
             <div>
               <h2>${task.title}</h2>
-              <p>${task.subtitle}</p>
             </div>
             <span class="task-badge">${progress.available} 张可答</span>
           </div>
           <div class="progress"><i style="width:${percent}%"></i></div>
           <div class="task-actions">
-            <span>已答 ${progress.answered}/${progress.total} · ${task.rewardText}</span>
+            <span>答题进度 ${progress.answered}/${progress.total}</span>
             <button class="primary" data-task="${task.id}">${progress.available ? "进入任务" : "查看结果"}</button>
           </div>
         `;

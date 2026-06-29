@@ -23,11 +23,14 @@ const { pathToFileURL } = require("url");
       titleHeight: title.height,
       titleLineHeight: Number.parseFloat(style.lineHeight),
       titleText: document.querySelector(".hero h1").textContent.trim(),
+      heroBottom: document.querySelector(".hero").getBoundingClientRect().bottom,
+      metricBottom: Math.max(...[...document.querySelectorAll(".hero .metric")].map((el) => el.getBoundingClientRect().bottom)),
       cards: [...document.querySelectorAll(".task-card")].map((el) => el.getBoundingClientRect().width)
     };
   });
   if (homeMetrics.titleText !== "概念卡任务调研") throw new Error(`expected single-line title text ${JSON.stringify(homeMetrics)}`);
   if (homeMetrics.titleHeight > homeMetrics.titleLineHeight * 1.35) throw new Error(`hero title should render as one line ${JSON.stringify(homeMetrics)}`);
+  if (homeMetrics.metricBottom > homeMetrics.heroBottom + 1) throw new Error(`metrics should sit inside hero ${JSON.stringify(homeMetrics)}`);
   if (homeMetrics.scrollWidth > homeMetrics.clientWidth) throw new Error(`home horizontal overflow ${JSON.stringify(homeMetrics)}`);
   await page.locator('[data-task="task-ai"]').click();
   await page.waitForSelector(".concept-shell");

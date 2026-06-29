@@ -20,6 +20,14 @@ const { pathToFileURL } = require("url");
 
   const taskCount = await page.locator("#taskPage.active .task-card").count();
   if (taskCount !== 2) throw new Error(`expected 2 task cards, got ${taskCount}`);
+  const loginStatus = await page.locator(".login-status").textContent();
+  if (!loginStatus.includes("已登录") || !loginStatus.includes("开源社区用户")) throw new Error(`expected login status in hero, got ${loginStatus}`);
+  const heroMetricCount = await page.locator(".hero .metric").count();
+  if (heroMetricCount !== 2) throw new Error(`expected two metric cards inside hero, got ${heroMetricCount}`);
+  const taskTitles = await page.locator("#taskPage.active .task-card h2").allTextContents();
+  if (taskTitles.join("|") !== "碳酸饮料口味测试|咖啡口味测试") throw new Error(`unexpected task titles ${taskTitles.join("|")}`);
+  const taskDescriptions = await page.locator("#taskPage.active .task-card p").count();
+  if (taskDescriptions !== 0) throw new Error("task descriptions should be removed");
   const historyVisibleOnTaskPage = await page.locator("#taskPage.active .history-item").count();
   if (historyVisibleOnTaskPage !== 0) throw new Error("history should not be rendered on task page");
   if (await page.locator("#minePage").isVisible()) throw new Error("mine page should be hidden while task page is active");

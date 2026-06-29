@@ -47,20 +47,20 @@
       {
         id: "task-ai",
         activityId: "activity-2026-concept",
-        title: "AI 编程助手概念调研",
-        subtitle: "10 张概念卡随机出现，全部答完有机会获得奖励",
+        title: "碳酸饮料口味测试",
+        subtitle: "",
         rewardText: "成长值即时记录，元气树进入人工审核",
-        hero: "面向开源贡献者的 AI 编程助手",
+        hero: "碳酸饮料口味测试",
         status: "online",
         order: 1
       },
       {
         id: "task-design",
         activityId: "activity-2026-concept",
-        title: "社区新手任务概念调研",
-        subtitle: "帮助我们判断哪些任务更适合新贡献者",
+        title: "咖啡口味测试",
+        subtitle: "",
         rewardText: "完成后可进入下一张任务卡继续答题",
-        hero: "更轻量的新手成长任务",
+        hero: "咖啡口味测试",
         status: "online",
         order: 2
       }
