@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "test": "node tests/survey-engine.test.js",
+    "test:browser": "node tests/browser-check.js",
+    "test:layout": "node tests/layout-check.js"
+  }
+}

@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>开源社区概念卡调研</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f3ee;
+      --panel: #ffffff;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --line: #eadfd3;
+      --orange: #f37b24;
+      --green: #16a168;
+      --blue: #2563eb;
+      --red: #ef4444;
+      --shadow: 0 18px 50px rgba(78, 54, 28, .14);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #fff5ea 0%, var(--bg) 44%, #eef7f3 100%);
+      color: var(--ink);
+    }
+
+    button {
+      border: 0;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .app {
+      width: min(100%, 430px);
+      min-height: 100vh;
+      margin: 0 auto;
+      background: linear-gradient(180deg, #fff1dd 0%, #fffaf5 44%, #f6fbf9 100%);
+      box-shadow: 0 0 0 1px rgba(0,0,0,.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .statusbar {
+      height: 34px;
+      background: rgba(31, 41, 55, .34);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px 8px;
+      color: #fff;
+      background: linear-gradient(135deg, #f59a35 0%, #f07b23 65%, #ee6a2e 100%);
+    }
+
+    .back {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: rgba(255,255,255,.18);
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .top-title {
+      min-width: 0;
+      font-size: 20px;
+      font-weight: 750;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .hero {
+      padding: 20px 18px 24px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 84% 44%, rgba(255,255,255,.34) 0 11%, transparent 12%),
+        linear-gradient(135deg, #f59a35 0%, #f07b23 56%, #e76531 100%);
+      position: relative;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 32px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      margin: 12px 0 0;
+      color: rgba(255,255,255,.88);
+      font-size: 15px;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      margin-top: 18px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.18);
+      color: rgba(255,255,255,.92);
+      font-size: 14px;
+    }
+
+    .content { padding: 18px; }
+
+    .user-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: -30px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .metric, .task-card, .history-item, .concept-shell, .done-panel {
+      background: rgba(255,255,255,.94);
+      border: 1px solid rgba(234, 223, 211, .9);
+      box-shadow: var(--shadow);
+    }
+
+    .metric {
+      border-radius: 8px;
+      padding: 13px 14px;
+    }
+
+    .metric b { display: block; font-size: 24px; }
+    .metric span { color: var(--muted); font-size: 12px; }
+
+    .section-title {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      margin: 22px 0 12px;
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .section-title small { color: var(--muted); font-size: 12px; font-weight: 600; }
+
+    .task-list { display: grid; gap: 12px; }
+
+    .task-card {
+      border-radius: 8px;
+      padding: 14px;
+      overflow: hidden;
+    }
+
+    .task-card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .task-card h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.28;
+    }
+
+    .task-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .task-badge {
+      flex: none;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #e7f7ef;
+      color: #087449;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .progress {
+      height: 8px;
+      margin: 14px 0 12px;
+      border-radius: 999px;
+      background: #f0e8de;
+      overflow: hidden;
+    }
+
+    .progress i {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--orange), var(--green));
+    }
+
+    .task-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .task-actions span { color: var(--muted); font-size: 12px; }
+
+    .primary {
+      min-width: 104px;
+      height: 38px;
+      padding: 0 16px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--orange);
+      font-weight: 800;
+    }
+
+    .secondary {
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      color: var(--ink);
+      background: #eef4ff;
+      font-weight: 750;
+    }
+
+    .task-hero {
+      padding: 18px 18px 20px;
+      color: #fff;
+      background:
+        linear-gradient(135deg, rgba(245,154,53,.96), rgba(231,92,38,.94)),
+        url("file:///D:/User/YQSL/Desktop/问卷星/概念卡/概念卡参考信息.png") center/cover;
+    }
+
+    .task-hero h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.16;
+      letter-spacing: 0;
+    }
+
+    .task-hero p { margin: 10px 0 0; color: rgba(255,255,255,.9); }
+
+    .thumbs {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 14px 18px 12px;
+      scrollbar-width: none;
+    }
+
+    .thumbs::-webkit-scrollbar { display: none; }
+
+    .thumb {
+      flex: 0 0 54px;
+      height: 54px;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      background: var(--thumb-color, #ddd);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: 0 8px 16px rgba(0,0,0,.08);
+    }
+
+    .thumb.current { border-color: #fff; outline: 2px solid var(--orange); }
+    .thumb.done { opacity: .42; }
+
+    .concept-wrap { padding: 8px 18px 30px; }
+
+    .concept-shell {
+      border-radius: 8px;
+      padding: 12px;
+      border: 3px solid var(--orange);
+    }
+
+    .poster {
+      min-height: 380px;
+      border-radius: 6px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .poster-art {
+      min-height: 244px;
+      padding: 22px;
+      background:
+        radial-gradient(circle at 72% 46%, rgba(255,255,255,.72) 0 12%, transparent 13%),
+        linear-gradient(145deg, color-mix(in srgb, var(--accent) 22%, white), #ffffff 46%, color-mix(in srgb, var(--accent) 28%, white));
+      display: grid;
+      align-items: end;
+    }
+
+    .poster-art h2 {
+      margin: 0;
+      color: color-mix(in srgb, var(--accent) 68%, #1f2937);
+      font-size: 34px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .poster-product {
+      justify-self: center;
+      width: 118px;
+      height: 148px;
+      margin-top: 18px;
+      border-radius: 24px 24px 16px 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.96), color-mix(in srgb, var(--accent) 52%, #fff));
+      border: 3px solid rgba(255,255,255,.88);
+      box-shadow: 0 16px 35px rgba(30, 41, 59, .18);
+      position: relative;
+    }
+
+    .poster-product::before {
+      content: "";
+      position: absolute;
+      top: -22px;
+      left: 36px;
+      width: 46px;
+      height: 24px;
+      border-radius: 10px 10px 4px 4px;
+      background: color-mix(in srgb, var(--accent) 70%, #fff);
+    }
+
+    .poster-product b {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: 56px;
+      text-align: center;
+      font-size: 18px;
+      line-height: 1.1;
+    }
+
+    .poster-info { padding: 16px 18px 18px; }
+
+    .poster-info strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .poster-info p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .price {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-weight: 900;
+    }
+
+    .price b { color: var(--orange); font-size: 30px; }
+    .price span { color: #111827; font-size: 24px; }
+
+    .question {
+      padding: 18px 4px 6px;
+      text-align: center;
+    }
+
+    .question h3 {
+      margin: 0 0 16px;
+      font-size: 18px;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+
+    .option {
+      min-width: 0;
+      padding: 8px 2px 2px;
+      border-radius: 8px;
+      background: transparent;
+      color: #606976;
+    }
+
+    .option::before {
+      content: "";
+      display: block;
+      width: 35px;
+      height: 35px;
+      margin: 0 auto 5px;
+      border-radius: 10px 10px 12px 12px;
+      background: #e1e4e8;
+      clip-path: polygon(36% 100%, 80% 100%, 80% 45%, 100% 45%, 100% 18%, 70% 18%, 66% 0, 48% 0, 42% 18%, 20% 18%, 20% 45%, 36% 45%);
+    }
+
+    .option:hover::before, .option.selected::before { background: var(--orange); }
+    .option span { display: block; font-size: 11px; line-height: 1.25; }
+
+    .empty {
+      padding: 28px 18px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .done-panel {
+      margin: 18px;
+      border-radius: 8px;
+      padding: 22px 18px;
+      text-align: center;
+    }
+
+    .done-panel h2 { margin: 0; font-size: 24px; }
+    .done-panel p { color: var(--muted); line-height: 1.6; }
+
+    .done-actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .history-list { display: grid; gap: 10px; }
+
+    .history-item {
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+
+    .history-item strong { display: block; margin-bottom: 8px; }
+
+    .history-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: #475569;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%) translateY(18px);
+      width: min(360px, calc(100vw - 36px));
+      padding: 12px 14px;
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(17, 24, 39, .92);
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: .2s ease;
+      z-index: 10;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 360px) {
+      .hero h1, .task-hero h1 { font-size: 27px; }
+      .poster-art h2 { font-size: 29px; }
+      .options { gap: 2px; }
+      .option span { font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="statusbar"></div>
+    <section id="homeScreen" class="screen active">
+      <div class="hero">
+        <h1>概念卡<br>任务调研</h1>
+        <p>登录开源社区后参与调研，答题记录进入飞书审核链路。</p>
+        <span class="hero-pill">全部答完，就有机会领奖</span>
+      </div>
+      <div class="content">
+        <div class="user-row">
+          <div class="metric"><b id="growthValue">0</b><span>成长值</span></div>
+          <div class="metric"><b id="vitalityTree">0</b><span>元气树</span></div>
+        </div>
+        <div class="section-title"><span>任务卡</span><small>低完成度优先分发</small></div>
+        <div id="taskList" class="task-list"></div>
+        <div class="section-title"><span>我的记录</span><small id="historyCount">0 条</small></div>
+        <div id="historyList" class="history-list"></div>
+      </div>
+    </section>
+
+    <section id="surveyScreen" class="screen">
+      <div class="topbar">
+        <button class="back" id="backHome" aria-label="返回">‹</button>
+        <div id="surveyTopTitle" class="top-title">概念卡调研</div>
+      </div>
+      <div class="task-hero">
+        <h1 id="taskHeroTitle">任务卡</h1>
+        <p id="taskHeroText">全部答完，就有机会领奖哦～</p>
+      </div>
+      <div id="thumbs" class="thumbs"></div>
+      <div id="conceptArea" class="concept-wrap"></div>
+    </section>
+
+    <div id="toast" class="toast"></div>
+  </main>
+
+  <script src="survey-engine.js"></script>
+  <script>
+    const storageKey = "concept-card-demo-state-v1";
+    const engine = window.SurveyEngine;
+    const userId = "community-user-1024";
+    const initialState = engine.createSurveyState();
+    const savedState = localStorage.getItem(storageKey);
+    let state = savedState ? JSON.parse(savedState) : initialState;
+    let currentTaskId = null;
+    let currentDemo = null;
+    let isSubmitting = false;
+
+    const els = {
+      home: document.getElementById("homeScreen"),
+      survey: document.getElementById("surveyScreen"),
+      taskList: document.getElementById("taskList"),
+      historyList: document.getElementById("historyList"),
+      historyCount: document.getElementById("historyCount"),
+      growthValue: document.getElementById("growthValue"),
+      vitalityTree: document.getElementById("vitalityTree"),
+      backHome: document.getElementById("backHome"),
+      surveyTopTitle: document.getElementById("surveyTopTitle"),
+      taskHeroTitle: document.getElementById("taskHeroTitle"),
+      taskHeroText: document.getElementById("taskHeroText"),
+      thumbs: document.getElementById("thumbs"),
+      conceptArea: document.getElementById("conceptArea"),
+      toast: document.getElementById("toast")
+    };
+
+    function save() {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1300);
+    }
+
+    function switchScreen(name) {
+      els.home.classList.toggle("active", name === "home");
+      els.survey.classList.toggle("active", name === "survey");
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+
+    function renderHome() {
+      const user = state.user;
+      els.growthValue.textContent = user.growthValue;
+      els.vitalityTree.textContent = user.vitalityTree;
+      els.taskList.innerHTML = "";
+      state.tasks.filter((task) => task.status === "online").sort((a, b) => a.order - b.order).forEach((task) => {
+        const progress = engine.getTaskProgress(state, userId, task.id);
+        const percent = progress.total ? Math.round(progress.answered / progress.total * 100) : 0;
+        const card = document.createElement("article");
+        card.className = "task-card";
+        card.innerHTML = `
+          <div class="task-card-top">
+            <div>
+              <h2>${task.title}</h2>
+              <p>${task.subtitle}</p>
+            </div>
+            <span class="task-badge">${progress.available} 张可答</span>
+          </div>
+          <div class="progress"><i style="width:${percent}%"></i></div>
+          <div class="task-actions">
+            <span>已答 ${progress.answered}/${progress.total} · ${task.rewardText}</span>
+            <button class="primary" data-task="${task.id}">${progress.available ? "进入任务" : "查看结果"}</button>
+          </div>
+        `;
+        els.taskList.appendChild(card);
+      });
+      els.taskList.querySelectorAll("[data-task]").forEach((button) => {
+        button.addEventListener("click", () => startTask(button.dataset.task));
+      });
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const history = engine.getHistory(state, userId);
+      els.historyCount.textContent = `${history.length} 条`;
+      els.historyList.innerHTML = history.map((item) => `
+        <article class="history-item">
+          <strong>${item.title}</strong>
+          <div class="history-meta">
+            <span class="tag">已答 ${item.answered}/${item.total}</span>
+            <span class="tag">成长值 ${item.growthStatus}</span>
+            <span class="tag">元气树 ${item.vitalityStatus}</span>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function startTask(taskId) {
+      currentTaskId = taskId;
+      const task = state.tasks.find((item) => item.id === taskId);
+      els.surveyTopTitle.textContent = task.title;
+      els.taskHeroTitle.textContent = task.hero;
+      els.taskHeroText.textContent = task.rewardText;
+      switchScreen("survey");
+      showNextDemo();
+    }
+
+    function showNextDemo() {
+      currentDemo = engine.getNextDemo(state, userId, currentTaskId);
+      renderThumbs();
+      if (!currentDemo) {
+        renderDone();
+        save();
+        return;
+      }
+      renderConcept(currentDemo);
+    }
+
+    function renderThumbs() {
+      const demos = state.demos.filter((demo) => demo.taskId === currentTaskId && demo.status === "online");
+      els.thumbs.innerHTML = demos.map((demo, index) => {
+        const done = state.answers.some((answer) => answer.userId === userId && answer.demoId === demo.id && answer.questionId === demo.question.id);
+        const full = demo.answerCount + state.answers.filter((answer) => answer.demoId === demo.id).length >= demo.targetAnswers;
+        const active = currentDemo && demo.id === currentDemo.id;
+        return `<div class="thumb ${done || full ? "done" : ""} ${active ? "current" : ""}" style="--thumb-color:${demo.art.accent}">${index + 1}</div>`;
+      }).join("");
+    }
+
+    function renderConcept(demo) {
+      const currentAnswers = demo.currentAnswers ?? demo.answerCount;
+      els.conceptArea.innerHTML = `
+        <div class="concept-shell">
+          <div class="poster" style="--accent:${demo.art.accent}">
+            <div class="poster-art">
+              <div>
+                <h2>${demo.title}</h2>
+                <div class="poster-product"><b>${demo.brand}</b></div>
+              </div>
+            </div>
+            <div class="poster-info">
+              <strong>${demo.brand}</strong>
+              <p>${demo.category} · ${demo.sellingPoint}</p>
+              <div class="price"><b>${demo.price}</b><span>${demo.spec}</span></div>
+            </div>
+          </div>
+          <div class="question">
+            <h3>${demo.question.text}</h3>
+            <div class="options">
+              ${demo.question.options.map((option) => `<button class="option" data-option="${option.id}"><span>${option.label}</span></button>`).join("")}
+            </div>
+          </div>
+        </div>
+      `;
+      els.conceptArea.querySelectorAll("[data-option]").forEach((button) => {
+        button.addEventListener("click", () => answerDemo(button));
+      });
+      showToast(`当前已收集 ${currentAnswers}/${demo.targetAnswers} 份`);
+    }
+
+    function answerDemo(button) {
+      if (isSubmitting || !currentDemo) return;
+      isSubmitting = true;
+      button.classList.add("selected");
+      const result = engine.submitAnswer(state, {
+        userId,
+        taskId: currentTaskId,
+        demoId: currentDemo.id,
+        questionId: currentDemo.question.id,
+        optionId: button.dataset.option
+      });
+      save();
+      if (result.status !== "accepted") {
+        showToast(statusText(result.status));
+        isSubmitting = false;
+        renderConcept(currentDemo);
+        return;
+      }
+      showToast("已提交，进入下一张");
+      window.setTimeout(() => {
+        isSubmitting = false;
+        showNextDemo();
+      }, 480);
+    }
+
+    function statusText(status) {
+      return {
+        duplicate: "这张已答过，不能修改",
+        full: "这张已收满 100 份",
+        unavailable: "这张暂不可答",
+        "invalid-question": "题目状态异常",
+        "invalid-option": "选项状态异常"
+      }[status] || "提交失败，请重试";
+    }
+
+    function renderDone() {
+      const currentIndex = state.tasks.findIndex((task) => task.id === currentTaskId);
+      const nextTask = state.tasks.slice(currentIndex + 1).find((task) => task.status === "online" && engine.getTaskProgress(state, userId, task.id).available > 0);
+      const history = engine.getHistory(state, userId).find((item) => item.taskId === currentTaskId);
+      els.conceptArea.innerHTML = `
+        <div class="done-panel">
+          <h2>本任务卡答题结束</h2>
+          <p>当前任务已答 ${history.answered}/${history.total}。成长值状态：${history.growthStatus}；元气树状态：${history.vitalityStatus}。</p>
+          <div class="done-actions">
+            ${nextTask ? `<button class="primary" id="nextTask">进入下一个任务卡</button>` : ""}
+            <button class="secondary" id="homeAgain">返回我的记录</button>
+          </div>
+        </div>
+      `;
+      const nextButton = document.getElementById("nextTask");
+      if (nextButton) nextButton.addEventListener("click", () => startTask(nextTask.id));
+      document.getElementById("homeAgain").addEventListener("click", () => {
+        renderHome();
+        switchScreen("home");
+      });
+    }
+
+    els.backHome.addEventListener("click", () => {
+      renderHome();
+      switchScreen("home");
+    });
+
+    renderHome();
+  </script>
+</body>
+</html>
