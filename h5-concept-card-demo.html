@@ -254,7 +254,7 @@
 
     .answer-nav { padding: 12px 0 4px; }
     .survey-meta { margin-bottom: 8px; color: rgba(255,255,255,.92); font-size: 13px; }
-    .thumbs { display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none; }
+    .thumbs { display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none; padding: 8px calc(50% - 33px) 6px; scroll-behavior: smooth; scroll-snap-type: x mandatory; }
     .thumbs::-webkit-scrollbar { display: none; }
     .answer-thumb {
       flex: 0 0 54px;
@@ -268,11 +268,17 @@
       font-weight: 900;
       box-shadow: 0 8px 16px rgba(126,55,13,.15);
       opacity: .72;
+      transform: scale(.92);
+      transform-origin: center;
+      transition: transform .28s cubic-bezier(.2,.8,.2,1), opacity .28s ease, border-color .28s ease;
+      scroll-snap-align: center;
     }
-    .answer-thumb.current { opacity: 1; border-color: #fff; outline: 2px solid #df6417; }
+    .answer-thumb.current { opacity: 1; border-color: #fff; outline: 2px solid #df6417; transform: scale(1.22); z-index: 1; }
     .answer-thumb.done { opacity: .42; }
 
-    .concept-wrap { padding: 18px 18px 40px; }
+    .concept-wrap { padding: 18px 18px 40px; transition: opacity .26s ease, transform .26s ease; }
+    .concept-wrap.switching { opacity: 0; transform: translateY(12px); }
+    .concept-wrap.settled { opacity: 1; transform: translateY(0); }
     .concept-shell {
       border-radius: 8px;
       padding: 12px;
@@ -311,6 +317,8 @@
     .poster-info p { margin: 8px 0 0; color: #6b7280; font-size: 13px; line-height: 1.45; }
 
     .question-box { padding: 18px 4px 4px; text-align: center; }
+    .question-block { padding: 0 0 18px; }
+    .question-block + .question-block { padding-top: 16px; border-top: 1px solid #f0e5dd; }
     .question-title { margin: 0 0 16px; font-size: 18px; line-height: 1.38; font-weight: 700; }
     .options { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
     .option { min-width: 0; padding: 8px 1px 2px; border-radius: 8px; background: transparent; color: #6b7280; }
@@ -422,7 +430,8 @@
     let currentTaskId = null;
     let currentSessionId = null;
     let currentStep = null;
-    let pendingValue = "";
+    let pendingChoice = "";
+    let pendingText = "";
 
     const els = {
       home: document.getElementById("homeScreen"),
@@ -524,7 +533,8 @@
 
     function showCurrentStep() {
       currentStep = engine.getCurrentStep(state, userId, currentSessionId);
-      pendingValue = "";
+      pendingChoice = "";
+      pendingText = "";
       renderThumbs();
       if (!currentStep) {
         renderDone();
@@ -545,70 +555,93 @@
         const done = demo.questions.every((question) => state.answers.some((answer) => answer.userId === userId && answer.demoId === demo.id && answer.questionId === question.id));
         return `<div class="answer-thumb ${index === currentIndex ? "current" : ""} ${done ? "done" : ""}" style="--thumb-color:${demo.art.accent}">${index + 1}</div>`;
       }).join("");
+      requestAnimationFrame(() => {
+        const active = els.thumbs.querySelector(".answer-thumb.current");
+        if (active) active.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      });
     }
 
     function renderConcept(step) {
       const demo = step.demo;
-      const question = step.question;
-      const questionBody = question.type === "choice"
-        ? `<div class="options">${question.options.map((option) => `<button class="option" data-value="${option.id}"><span>${option.label}</span></button>`).join("")}</div>`
-        : `<textarea class="feedback-input" placeholder="${question.placeholder}" maxlength="120"></textarea>`;
-      els.conceptArea.innerHTML = `
-        <div class="concept-shell">
-          <div class="poster" style="--accent:${demo.art.accent}">
-            <div class="poster-art">
-              <div>
-                <h2>${demo.title}</h2>
-                <div class="poster-product"><b>${demo.brand}</b></div>
+      const choice = demo.questions.find((question) => question.type === "choice");
+      const feedback = demo.questions.find((question) => question.type === "text");
+      els.conceptArea.classList.add("switching");
+      window.setTimeout(() => {
+        els.conceptArea.innerHTML = `
+          <div class="concept-shell">
+            <div class="poster" style="--accent:${demo.art.accent}">
+              <div class="poster-art">
+                <div>
+                  <h2>${demo.title}</h2>
+                  <div class="poster-product"><b>${demo.brand}</b></div>
+                </div>
+              </div>
+              <div class="poster-info">
+                <div class="price"><b>${demo.price}</b><span>${demo.spec}</span></div>
+                <p>${demo.category} · ${demo.sellingPoint}</p>
               </div>
             </div>
-            <div class="poster-info">
-              <div class="price"><b>${demo.price}</b><span>${demo.spec}</span></div>
-              <p>${demo.category} · ${demo.sellingPoint}</p>
+            <div class="question-box">
+              <div class="question-block">
+                <h3 class="question-title">${choice.text}</h3>
+                <div class="options">${choice.options.map((option) => `<button class="option" data-value="${option.id}"><span>${option.label}</span></button>`).join("")}</div>
+              </div>
+              <div class="question-block">
+                <h3 class="question-title">${feedback.text}</h3>
+                <textarea class="feedback-input" placeholder="${feedback.placeholder}" maxlength="120"></textarea>
+              </div>
+              <button id="submitAnswer" class="submit-answer" disabled>提交</button>
             </div>
           </div>
-          <div class="question-box">
-            <h3 class="question-title">${question.text}</h3>
-            ${questionBody}
-            <button id="submitAnswer" class="submit-answer" disabled>提交</button>
-          </div>
-        </div>
-      `;
-      const submit = document.getElementById("submitAnswer");
-      if (question.type === "choice") {
+        `;
+        const submit = document.getElementById("submitAnswer");
+        const textarea = els.conceptArea.querySelector("textarea");
+        const validate = () => {
+          pendingText = textarea.value;
+          submit.disabled = !pendingChoice || pendingText.trim().length < feedback.minLength;
+        };
         els.conceptArea.querySelectorAll(".option").forEach((button) => {
           button.addEventListener("click", () => {
             els.conceptArea.querySelectorAll(".option").forEach((item) => item.classList.remove("selected"));
             button.classList.add("selected");
-            pendingValue = button.dataset.value;
-            submit.disabled = false;
+            pendingChoice = button.dataset.value;
+            validate();
           });
         });
-      } else {
-        const textarea = els.conceptArea.querySelector("textarea");
-        textarea.addEventListener("input", () => {
-          pendingValue = textarea.value;
-          submit.disabled = textarea.value.trim().length < question.minLength;
-        });
-      }
-      submit.addEventListener("click", submitCurrentAnswer);
+        textarea.addEventListener("input", validate);
+        submit.addEventListener("click", () => submitCurrentAnswer(choice, feedback));
+        els.conceptArea.classList.remove("switching");
+        els.conceptArea.classList.add("settled");
+      }, 90);
     }
 
-    function submitCurrentAnswer() {
-      if (!currentStep || !pendingValue) return;
-      const result = engine.submitAnswer(state, {
+    function submitCurrentAnswer(choice, feedback) {
+      if (!currentStep || !pendingChoice || pendingText.trim().length < feedback.minLength) return;
+      const first = engine.submitAnswer(state, {
         userId,
         sessionId: currentSessionId,
         demoId: currentStep.demo.id,
-        questionId: currentStep.question.id,
-        value: pendingValue
+        questionId: choice.id,
+        value: pendingChoice
       });
-      if (result.status !== "accepted") {
-        showToast(statusText(result.status));
+      if (first.status !== "accepted") {
+        showToast(statusText(first.status));
+        return;
+      }
+      const second = engine.submitAnswer(state, {
+        userId,
+        sessionId: currentSessionId,
+        demoId: currentStep.demo.id,
+        questionId: feedback.id,
+        value: pendingText
+      });
+      if (second.status !== "accepted") {
+        showToast(statusText(second.status));
         return;
       }
       save();
-      showCurrentStep();
+      els.conceptArea.classList.add("switching");
+      window.setTimeout(showCurrentStep, 180);
     }
 
     function statusText(status) {
