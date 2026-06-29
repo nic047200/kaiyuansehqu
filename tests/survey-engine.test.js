@@ -1,8 +1,10 @@
 const assert = require("assert");
 const {
   createSurveyState,
+  startTaskSession,
   getAvailableDemos,
-  getNextDemo,
+  getTaskProgress,
+  getCurrentStep,
   submitAnswer
 } = require("../survey-engine");
 
@@ -17,74 +19,105 @@ function test(name, fn) {
   }
 }
 
-test("prioritizes demos with fewer valid answers and filters unavailable demos", () => {
+function sequence(values) {
+  const queue = [...values];
+  return () => queue.shift() ?? 0.5;
+}
+
+test("prioritizes demos with fewer valid participants and filters unavailable demos", () => {
   const state = createSurveyState();
-  const demos = getAvailableDemos(state, "user-demo", "task-ai", () => 0.5);
+  const demos = getAvailableDemos(state, "user-demo", "task-soda", () => 0.5);
   const ids = demos.map((demo) => demo.id);
 
-  assert.deepStrictEqual(ids.slice(0, 3), ["ai-02", "ai-05", "ai-01"]);
-  assert(!ids.includes("ai-09"));
-  assert(!ids.includes("ai-10"));
+  assert.deepStrictEqual(ids.slice(0, 3), ["soda-02", "soda-05", "soda-01"]);
+  assert(!ids.includes("soda-09"));
+  assert(!ids.includes("soda-10"));
 });
 
-test("randomizes demos with the same completion count", () => {
-  const stateA = createSurveyState();
-  const stateB = createSurveyState();
-  const lowSequence = [0.1, 0.2, 0.3, 0.4];
-  const highSequence = [0.9, 0.8, 0.7, 0.6];
-
-  const lowRandom = getAvailableDemos(stateA, "user-demo", "task-design", () => lowSequence.shift() ?? 0.5).map((demo) => demo.id);
-  const highRandom = getAvailableDemos(stateB, "user-demo", "task-design", () => highSequence.shift() ?? 0.5).map((demo) => demo.id);
-
-  assert.notDeepStrictEqual(lowRandom.slice(0, 3), highRandom.slice(0, 3));
-});
-
-test("submits one answer and returns the next available demo", () => {
+test("creates a stable random task session with one to ten cards", () => {
   const state = createSurveyState();
-  const first = getNextDemo(state, "user-demo", "task-ai", () => 0.5);
-  const result = submitAnswer(state, {
+  const session = startTaskSession(state, "user-demo", "task-soda", sequence([0.24, 0.5, 0.5, 0.5]));
+  const again = startTaskSession(state, "user-demo", "task-soda", () => 0.99);
+
+  assert(session.demoIds.length >= 1 && session.demoIds.length <= 10);
+  assert.strictEqual(session.demoIds.length, 2);
+  assert.deepStrictEqual(again.demoIds, session.demoIds);
+});
+
+test("each concept card has a six-option choice question and a required feedback question", () => {
+  const state = createSurveyState();
+  const session = startTaskSession(state, "user-demo", "task-soda", sequence([0.01, 0.5]));
+  const step = getCurrentStep(state, "user-demo", session.id);
+
+  assert.strictEqual(step.question.type, "choice");
+  assert.strictEqual(step.question.options.length, 6);
+  assert.strictEqual(step.demo.questions[1].type, "text");
+  assert.strictEqual(step.demo.questions[1].placeholder, "请写下具体建议，至少5个字");
+});
+
+test("submits choice first, then requires text feedback before advancing to next card", () => {
+  const state = createSurveyState();
+  const session = startTaskSession(state, "user-demo", "task-soda", sequence([0.24, 0.5, 0.5]));
+  const first = getCurrentStep(state, "user-demo", session.id);
+
+  let result = submitAnswer(state, {
     userId: "user-demo",
-    taskId: "task-ai",
-    demoId: first.id,
+    sessionId: session.id,
+    demoId: first.demo.id,
     questionId: first.question.id,
-    optionId: first.question.options[0].id
-  }, () => 0.5);
-
+    value: first.question.options[2].id
+  });
   assert.strictEqual(result.status, "accepted");
-  assert(result.nextDemo);
-  assert.notStrictEqual(result.nextDemo.id, first.id);
-  assert.strictEqual(state.answers.length, 1);
+  assert.strictEqual(result.nextStep.question.type, "text");
+  assert.strictEqual(result.nextStep.demo.id, first.demo.id);
+
+  result = submitAnswer(state, {
+    userId: "user-demo",
+    sessionId: session.id,
+    demoId: first.demo.id,
+    questionId: result.nextStep.question.id,
+    value: "太短"
+  });
+  assert.strictEqual(result.status, "invalid-text");
+
+  result = submitAnswer(state, {
+    userId: "user-demo",
+    sessionId: session.id,
+    demoId: first.demo.id,
+    questionId: first.demo.questions[1].id,
+    value: "建议突出真实口味和容量信息"
+  });
+  assert.strictEqual(result.status, "accepted");
+  assert(result.nextStep);
+  assert.notStrictEqual(result.nextStep.demo.id, first.demo.id);
 });
 
-test("rejects duplicate answers for the same demo question", () => {
+test("rejects duplicate answers for the same session question", () => {
   const state = createSurveyState();
-  const first = getNextDemo(state, "user-demo", "task-ai", () => 0.5);
+  const session = startTaskSession(state, "user-demo", "task-soda", sequence([0.01, 0.5]));
+  const first = getCurrentStep(state, "user-demo", session.id);
   const payload = {
     userId: "user-demo",
-    taskId: "task-ai",
-    demoId: first.id,
+    sessionId: session.id,
+    demoId: first.demo.id,
     questionId: first.question.id,
-    optionId: first.question.options[0].id
+    value: first.question.options[0].id
   };
 
-  assert.strictEqual(submitAnswer(state, payload, () => 0.5).status, "accepted");
-  assert.strictEqual(submitAnswer(state, payload, () => 0.5).status, "duplicate");
-  assert.strictEqual(state.answers.length, 1);
+  assert.strictEqual(submitAnswer(state, payload).status, "accepted");
+  assert.strictEqual(submitAnswer(state, payload).status, "duplicate");
 });
 
-test("rejects submissions when a demo has already reached one hundred answers", () => {
+test("reports task progress as answered and unanswered card counts", () => {
   const state = createSurveyState();
-  const fullDemo = state.demos.find((demo) => demo.id === "ai-10");
+  const session = startTaskSession(state, "user-demo", "task-soda", sequence([0.01, 0.5]));
+  const first = getCurrentStep(state, "user-demo", session.id);
+  submitAnswer(state, { userId: "user-demo", sessionId: session.id, demoId: first.demo.id, questionId: first.question.id, value: first.question.options[0].id });
+  submitAnswer(state, { userId: "user-demo", sessionId: session.id, demoId: first.demo.id, questionId: first.demo.questions[1].id, value: "希望文案更清楚一点" });
 
-  const result = submitAnswer(state, {
-    userId: "new-user",
-    taskId: fullDemo.taskId,
-    demoId: fullDemo.id,
-    questionId: fullDemo.question.id,
-    optionId: fullDemo.question.options[0].id
-  }, () => 0.5);
-
-  assert.strictEqual(result.status, "full");
+  const progress = getTaskProgress(state, "user-demo", "task-soda");
+  assert.strictEqual(progress.answered, 1);
+  assert.strictEqual(progress.unanswered, 0);
 });
 
 if (process.exitCode) {

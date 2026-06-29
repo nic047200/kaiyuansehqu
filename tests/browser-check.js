@@ -18,43 +18,49 @@ const { pathToFileURL } = require("url");
   await page.reload();
   await page.waitForSelector("#taskPage.active .task-card");
 
-  const taskCount = await page.locator("#taskPage.active .task-card").count();
-  if (taskCount !== 2) throw new Error(`expected 2 task cards, got ${taskCount}`);
-  const loginStatus = await page.locator(".login-status").textContent();
-  if (!loginStatus.includes("已登录") || !loginStatus.includes("开源社区用户")) throw new Error(`expected login status in hero, got ${loginStatus}`);
-  const heroMetricCount = await page.locator(".hero .metric").count();
-  if (heroMetricCount !== 2) throw new Error(`expected two metric cards inside hero, got ${heroMetricCount}`);
-  const taskTitles = await page.locator("#taskPage.active .task-card h2").allTextContents();
-  if (taskTitles.join("|") !== "碳酸饮料口味测试|咖啡口味测试") throw new Error(`unexpected task titles ${taskTitles.join("|")}`);
-  const taskDescriptions = await page.locator("#taskPage.active .task-card p").count();
-  if (taskDescriptions !== 0) throw new Error("task descriptions should be removed");
-  const historyVisibleOnTaskPage = await page.locator("#taskPage.active .history-item").count();
-  if (historyVisibleOnTaskPage !== 0) throw new Error("history should not be rendered on task page");
-  if (await page.locator("#minePage").isVisible()) throw new Error("mine page should be hidden while task page is active");
-
-  await page.locator('[data-tab="mine"]').click();
-  await page.waitForSelector("#minePage.active .history-item");
-  const taskVisibleOnMinePage = await page.locator("#minePage.active .task-card").count();
-  if (taskVisibleOnMinePage !== 0) throw new Error("task cards should not be rendered on mine page");
-  if (await page.locator("#taskPage").isVisible()) throw new Error("task page should be hidden while mine page is active");
-
-  await page.locator('[data-tab="tasks"]').click();
-  await page.waitForSelector("#taskPage.active .task-card");
-  await page.locator('#taskPage [data-task="task-ai"]').click();
-  await page.waitForSelector(".concept-shell");
-  const title = await page.locator(".poster-art h2").textContent();
-  const firstIsLowCompletion = title.includes("测试失败后自动定位原因") || title.includes("根据改动生成最小测试集");
-  if (!firstIsLowCompletion) {
-    throw new Error(`expected one of the lowest completion demos first, got ${title}`);
+  const title = await page.locator(".app-title").textContent();
+  if (title.trim() !== "口味测试") throw new Error(`expected page title 口味测试, got ${title}`);
+  const profileItems = await page.locator(".profile-card .profile-stat").count();
+  if (profileItems !== 3) throw new Error(`expected level/growth/tree profile stats, got ${profileItems}`);
+  await page.locator("#ruleEntry").click();
+  await page.waitForSelector("#ruleModal.open");
+  const ruleText = await page.locator("#ruleModal").textContent();
+  for (const text of ["答题规则", "成长值", "元气树", "人工审核"]) {
+    if (!ruleText.includes(text)) throw new Error(`rule modal missing ${text}`);
   }
+  await page.locator("#closeRule").click();
 
+  const taskTitles = await page.locator("#taskPage.active .task-card h2").allTextContents();
+  if (taskTitles.join("|") !== "碳酸饮料|咖啡") throw new Error(`unexpected task titles ${taskTitles.join("|")}`);
+  const systemText = await page.locator("body").textContent();
+  for (const banned of ["低完成度", "分发", "随机出现", "张可答"]) {
+    if (systemText.includes(banned)) throw new Error(`user-facing system rule should be hidden: ${banned}`);
+  }
+  const progressText = await page.locator("#taskPage .task-card").first().textContent();
+  if (!/已答题\s*0\s*\/\s*未答题\s*\d+/.test(progressText)) throw new Error(`expected answered/unanswered progress, got ${progressText}`);
+  if (!progressText.includes("答题")) throw new Error("task button should say 答题");
+
+  await page.locator('#taskPage [data-task="task-soda"]').click();
+  await page.waitForSelector("#surveyScreen.active .concept-shell");
+  const navCount = await page.locator(".answer-thumb").count();
+  if (navCount < 1 || navCount > 10) throw new Error(`expected 1-10 random answer cards, got ${navCount}`);
+  const navText = await page.locator(".survey-meta").textContent();
+  if (!/第\s*1\s*\/\s*\d+\s*张/.test(navText) || !navText.includes("人参与")) throw new Error(`bad survey meta ${navText}`);
+
+  const q1 = await page.locator(".question-title").textContent();
+  if (!q1.includes("这款产品你买吗")) throw new Error(`expected q1 purchase question, got ${q1}`);
+  const options = await page.locator(".option").count();
+  if (options !== 6) throw new Error(`expected 6 choice options, got ${options}`);
   await page.locator(".option").nth(2).click();
-  await page.waitForTimeout(700);
-  const nextTitle = await page.locator(".poster-art h2").textContent();
-  if (nextTitle === title) throw new Error("did not advance after answer");
-
-  const answered = await page.evaluate(() => JSON.parse(localStorage.getItem("concept-card-demo-state-v1")).answers.length);
-  if (answered !== 1) throw new Error(`expected one persisted answer, got ${answered}`);
+  await page.locator("#submitAnswer").click();
+  await page.waitForSelector("textarea.feedback-input");
+  const placeholder = await page.locator("textarea.feedback-input").getAttribute("placeholder");
+  if (placeholder !== "请写下具体建议，至少5个字") throw new Error(`bad placeholder ${placeholder}`);
+  await page.fill("textarea.feedback-input", "包装信息可以更突出一些");
+  await page.locator("#submitAnswer").click();
+  await page.waitForTimeout(500);
+  const answered = await page.evaluate(() => JSON.parse(localStorage.getItem("concept-card-demo-state-v2")).answers.length);
+  if (answered !== 2) throw new Error(`expected two persisted answers for one card, got ${answered}`);
 
   await page.screenshot({ path: "h5-concept-card-demo.png", fullPage: true });
   await browser.close();

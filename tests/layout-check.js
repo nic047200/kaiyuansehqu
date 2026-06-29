@@ -13,26 +13,26 @@ const { pathToFileURL } = require("url");
   await page.goto(pathToFileURL(path.resolve("h5-concept-card-demo.html")).href);
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await page.waitForSelector(".task-card");
+  await page.waitForSelector("#taskPage.active .task-card");
   const homeMetrics = await page.evaluate(() => {
-    const title = document.querySelector(".hero h1").getBoundingClientRect();
-    const style = getComputedStyle(document.querySelector(".hero h1"));
+    const title = document.querySelector(".app-title").getBoundingClientRect();
+    const style = getComputedStyle(document.querySelector(".app-title"));
+    const profile = document.querySelector(".profile-card").getBoundingClientRect();
     return {
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
       titleHeight: title.height,
       titleLineHeight: Number.parseFloat(style.lineHeight),
-      titleText: document.querySelector(".hero h1").textContent.trim(),
-      heroBottom: document.querySelector(".hero").getBoundingClientRect().bottom,
-      metricBottom: Math.max(...[...document.querySelectorAll(".hero .metric")].map((el) => el.getBoundingClientRect().bottom)),
+      titleText: document.querySelector(".app-title").textContent.trim(),
+      profileWidth: profile.width,
       cards: [...document.querySelectorAll(".task-card")].map((el) => el.getBoundingClientRect().width)
     };
   });
-  if (homeMetrics.titleText !== "概念卡任务调研") throw new Error(`expected single-line title text ${JSON.stringify(homeMetrics)}`);
-  if (homeMetrics.titleHeight > homeMetrics.titleLineHeight * 1.35) throw new Error(`hero title should render as one line ${JSON.stringify(homeMetrics)}`);
-  if (homeMetrics.metricBottom > homeMetrics.heroBottom + 1) throw new Error(`metrics should sit inside hero ${JSON.stringify(homeMetrics)}`);
+  if (homeMetrics.titleText !== "口味测试") throw new Error(`expected title text ${JSON.stringify(homeMetrics)}`);
+  if (homeMetrics.titleHeight > homeMetrics.titleLineHeight * 1.35) throw new Error(`title should render as one line ${JSON.stringify(homeMetrics)}`);
   if (homeMetrics.scrollWidth > homeMetrics.clientWidth) throw new Error(`home horizontal overflow ${JSON.stringify(homeMetrics)}`);
-  await page.locator('[data-task="task-ai"]').click();
+  if (homeMetrics.profileWidth < 380) throw new Error(`profile card too narrow ${JSON.stringify(homeMetrics)}`);
+  await page.locator('[data-task="task-soda"]').click();
   await page.waitForSelector(".concept-shell");
   const surveyMetrics = await page.evaluate(() => {
     const concept = document.querySelector(".concept-shell").getBoundingClientRect();
@@ -47,10 +47,8 @@ const { pathToFileURL } = require("url");
     };
   });
   if (surveyMetrics.scrollWidth > surveyMetrics.clientWidth) throw new Error(`survey horizontal overflow ${JSON.stringify(surveyMetrics)}`);
-  if (surveyMetrics.visibleOptions !== 5) throw new Error(`expected 5 visible options ${JSON.stringify(surveyMetrics)}`);
+  if (surveyMetrics.visibleOptions !== 6) throw new Error(`expected 6 visible options ${JSON.stringify(surveyMetrics)}`);
   if (surveyMetrics.conceptWidth < 350) throw new Error(`concept card too narrow ${JSON.stringify(surveyMetrics)}`);
   await browser.close();
   console.log("PASS layout checks");
 })().catch((error) => { console.error(error); process.exit(1); });
-
-

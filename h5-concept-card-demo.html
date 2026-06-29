@@ -3,680 +3,502 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>开源社区概念卡调研</title>
+  <title>口味测试</title>
   <style>
     :root {
-      color-scheme: light;
-      --bg: #f7f3ee;
-      --panel: #ffffff;
-      --ink: #1f2937;
-      --muted: #6b7280;
-      --line: #eadfd3;
-      --orange: #f37b24;
-      --green: #16a168;
-      --blue: #2563eb;
-      --red: #ef4444;
-      --shadow: 0 18px 50px rgba(78, 54, 28, .14);
+      --bg: #f6f6f6;
+      --card: #ffffff;
+      --ink: #222833;
+      --muted: #8a8f99;
+      --line: #eceff3;
+      --green: #8bd827;
+      --orange: #f47a22;
+      --orange-dark: #df6417;
+      --soft-orange: #fff2e5;
+      --shadow: 0 12px 32px rgba(33, 37, 44, .08);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: linear-gradient(180deg, #fff5ea 0%, var(--bg) 44%, #eef7f3 100%);
-      color: var(--ink);
-    }
-
-    button {
-      border: 0;
-      font: inherit;
-      cursor: pointer;
-    }
+    body { margin: 0; background: #e9e9e9; color: var(--ink); }
+    button, textarea { font: inherit; }
+    button { border: 0; cursor: pointer; }
 
     .app {
       width: min(100%, 430px);
       min-height: 100vh;
       margin: 0 auto;
-      background: linear-gradient(180deg, #fff1dd 0%, #fffaf5 44%, #f6fbf9 100%);
-      box-shadow: 0 0 0 1px rgba(0,0,0,.04);
+      background: var(--bg);
       position: relative;
       overflow: hidden;
     }
 
-    .statusbar {
-      height: 34px;
-      background: rgba(31, 41, 55, .34);
-    }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px 18px 8px;
-      color: #fff;
-      background: linear-gradient(135deg, #f59a35 0%, #f07b23 65%, #ee6a2e 100%);
-    }
-
-    .back {
-      width: 36px;
-      height: 36px;
-      border-radius: 999px;
-      display: grid;
-      place-items: center;
-      color: #fff;
-      background: rgba(255,255,255,.18);
-      font-size: 28px;
-      line-height: 1;
-    }
-
-    .top-title {
-      min-width: 0;
-      font-size: 20px;
-      font-weight: 750;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .screen { display: none; }
+    .statusbar { height: 36px; background: #fff; }
+    .screen { display: none; min-height: calc(100vh - 36px); }
     .screen.active { display: block; }
 
+    .app-head {
+      height: 82px;
+      padding: 22px 20px 0;
+      background: #fff;
+      display: grid;
+      grid-template-columns: 42px 1fr 112px;
+      align-items: start;
+      gap: 8px;
+    }
+
+    .back-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      background: transparent;
+      color: #111827;
+      font-size: 34px;
+      line-height: 26px;
+      text-align: left;
+    }
+
+    .app-title {
+      margin: 0;
+      text-align: center;
+      font-size: 21px;
+      line-height: 34px;
+      font-weight: 650;
+      letter-spacing: 0;
+    }
+
+    .mini-actions {
+      height: 34px;
+      border: 1px solid #edf0f3;
+      border-radius: 999px;
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      align-items: center;
+      background: #fff;
+      color: #171b22;
+      box-shadow: 0 2px 10px rgba(0,0,0,.03);
+    }
+
+    .mini-actions span { text-align: center; font-size: 20px; font-weight: 800; }
+    .mini-actions i { width: 1px; height: 18px; background: #edf0f3; }
+
+    .home-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: 58px;
+      background: #fff;
+      border-bottom: 1px solid #edf0f3;
+    }
+
+    .home-tab {
+      position: relative;
+      background: transparent;
+      color: #969ba3;
+      font-size: 18px;
+      font-weight: 650;
+    }
+
+    .home-tab.active { color: #232832; }
+    .home-tab.active::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 44px;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--green);
+      transform: translateX(-50%);
+    }
+
+    .home-body { padding: 16px 14px 34px; }
     .home-page { display: none; }
     .home-page.active { display: block; }
 
-    .hero {
-      padding: 20px 18px 24px;
-      color: #fff;
-      background:
-        radial-gradient(circle at 84% 44%, rgba(255,255,255,.34) 0 11%, transparent 12%),
-        linear-gradient(135deg, #f59a35 0%, #f07b23 56%, #e76531 100%);
-      position: relative;
-    }
-
-    .hero h1 {
-      margin: 0;
-      font-size: 28px;
-      line-height: 1.12;
-      white-space: nowrap;
-      letter-spacing: 0;
-    }
-
-    .login-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 12px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.16);
-      color: rgba(255,255,255,.94);
-      font-size: 13px;
-      font-weight: 750;
-    }
-
-    .login-status::before {
-      content: "";
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #54e59a;
-      box-shadow: 0 0 0 4px rgba(84,229,154,.18);
-    }
-
-    .hero-pill {
-      display: inline-flex;
-      align-items: center;
-      margin-top: 14px;
-      padding: 8px 16px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.18);
-      color: rgba(255,255,255,.92);
-      font-size: 14px;
-    }
-
-    .content { padding: 18px 18px 86px; }
-
-    .user-row {
+    .profile-card {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 18px;
-      position: relative;
-      z-index: 2;
-    }
-
-    .metric, .task-card, .history-item, .concept-shell, .done-panel {
-      background: rgba(255,255,255,.94);
-      border: 1px solid rgba(234, 223, 211, .9);
+      grid-template-columns: 58px 1fr 1fr 1fr;
+      align-items: center;
+      gap: 0;
+      min-height: 92px;
+      padding: 16px 10px;
+      border-radius: 8px;
+      background: var(--card);
       box-shadow: var(--shadow);
     }
 
-    .metric {
-      border-radius: 8px;
-      padding: 13px 14px;
-    }
-
-    .hero .metric {
-      background: rgba(255,255,255,.2);
-      border-color: rgba(255,255,255,.32);
-      box-shadow: 0 12px 30px rgba(115, 55, 18, .18);
-      backdrop-filter: blur(12px);
-    }
-
-    .metric b { display: block; font-size: 24px; }
-    .metric span { color: var(--muted); font-size: 12px; }
-    .hero .metric b, .hero .metric span { color: #fff; }
-
-    .section-title {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      margin: 22px 0 12px;
-      font-weight: 800;
-      font-size: 18px;
-    }
-
-    .section-title small { color: var(--muted); font-size: 12px; font-weight: 600; }
-
-    .task-list { display: grid; gap: 12px; }
-
-    .task-card {
-      border-radius: 8px;
-      padding: 14px;
-      overflow: hidden;
-    }
-
-    .task-card-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 14px;
-      align-items: flex-start;
-    }
-
-    .task-card h2 {
-      margin: 0;
-      font-size: 18px;
-      line-height: 1.28;
-    }
-
-    .task-card p {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .task-badge {
-      flex: none;
-      padding: 5px 8px;
-      border-radius: 999px;
-      background: #e7f7ef;
-      color: #087449;
-      font-size: 12px;
-      font-weight: 750;
-    }
-
-    .progress {
-      height: 8px;
-      margin: 14px 0 12px;
-      border-radius: 999px;
-      background: #f0e8de;
-      overflow: hidden;
-    }
-
-    .progress i {
-      display: block;
-      height: 100%;
-      width: 0;
-      border-radius: inherit;
-      background: linear-gradient(90deg, var(--orange), var(--green));
-    }
-
-    .task-actions {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .task-actions span { color: var(--muted); font-size: 12px; }
-
-    .primary {
-      min-width: 104px;
-      height: 38px;
-      padding: 0 16px;
-      border-radius: 999px;
-      color: #fff;
-      background: var(--orange);
-      font-weight: 800;
-    }
-
-    .secondary {
-      height: 38px;
-      padding: 0 14px;
-      border-radius: 999px;
-      color: var(--ink);
-      background: #eef4ff;
-      font-weight: 750;
-    }
-
-    .task-hero {
-      padding: 18px 18px 20px;
-      color: #fff;
-      background:
-        linear-gradient(135deg, rgba(245,154,53,.96), rgba(231,92,38,.94)),
-        url("file:///D:/User/YQSL/Desktop/问卷星/概念卡/概念卡参考信息.png") center/cover;
-    }
-
-    .task-hero h1 {
-      margin: 0;
-      font-size: 30px;
-      line-height: 1.16;
-      letter-spacing: 0;
-    }
-
-    .task-hero p { margin: 10px 0 0; color: rgba(255,255,255,.9); }
-
-    .thumbs {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      padding: 14px 18px 12px;
-      scrollbar-width: none;
-    }
-
-    .thumbs::-webkit-scrollbar { display: none; }
-
-    .thumb {
-      flex: 0 0 54px;
-      height: 54px;
-      border-radius: 8px;
-      border: 2px solid transparent;
-      background: var(--thumb-color, #ddd);
-      color: #fff;
+    .avatar {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto;
+      border-radius: 50%;
       display: grid;
       place-items: center;
-      font-size: 12px;
-      font-weight: 800;
-      box-shadow: 0 8px 16px rgba(0,0,0,.08);
-    }
-
-    .thumb.current { border-color: #fff; outline: 2px solid var(--orange); }
-    .thumb.done { opacity: .42; }
-
-    .concept-wrap { padding: 8px 18px 30px; }
-
-    .concept-shell {
-      border-radius: 8px;
-      padding: 12px;
-      border: 3px solid var(--orange);
-    }
-
-    .poster {
-      min-height: 380px;
-      border-radius: 6px;
-      background: #fff;
-      overflow: hidden;
-    }
-
-    .poster-art {
-      min-height: 244px;
-      padding: 22px;
-      background:
-        radial-gradient(circle at 72% 46%, rgba(255,255,255,.72) 0 12%, transparent 13%),
-        linear-gradient(145deg, color-mix(in srgb, var(--accent) 22%, white), #ffffff 46%, color-mix(in srgb, var(--accent) 28%, white));
-      display: grid;
-      align-items: end;
-    }
-
-    .poster-art h2 {
-      margin: 0;
-      color: color-mix(in srgb, var(--accent) 68%, #1f2937);
-      font-size: 34px;
-      line-height: 1.08;
-      letter-spacing: 0;
-    }
-
-    .poster-product {
-      justify-self: center;
-      width: 118px;
-      height: 148px;
-      margin-top: 18px;
-      border-radius: 24px 24px 16px 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,.96), color-mix(in srgb, var(--accent) 52%, #fff));
-      border: 3px solid rgba(255,255,255,.88);
-      box-shadow: 0 16px 35px rgba(30, 41, 59, .18);
-      position: relative;
-    }
-
-    .poster-product::before {
-      content: "";
-      position: absolute;
-      top: -22px;
-      left: 36px;
-      width: 46px;
-      height: 24px;
-      border-radius: 10px 10px 4px 4px;
-      background: color-mix(in srgb, var(--accent) 70%, #fff);
-    }
-
-    .poster-product b {
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      top: 56px;
-      text-align: center;
-      font-size: 18px;
-      line-height: 1.1;
-    }
-
-    .poster-info { padding: 16px 18px 18px; }
-
-    .poster-info strong {
-      display: block;
-      font-size: 18px;
-      margin-bottom: 4px;
-    }
-
-    .poster-info p {
-      margin: 0 0 12px;
-      color: var(--muted);
-      line-height: 1.5;
-      font-size: 14px;
-    }
-
-    .price {
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
+      color: #fff;
+      background: linear-gradient(135deg, #ff9b37, #ff6d1b);
       font-weight: 900;
     }
 
-    .price b { color: var(--orange); font-size: 30px; }
-    .price span { color: #111827; font-size: 24px; }
-
-    .question {
-      padding: 18px 4px 6px;
-      text-align: center;
-    }
-
-    .question h3 {
-      margin: 0 0 16px;
-      font-size: 18px;
-    }
-
-    .options {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-    }
-
-    .option {
+    .profile-stat {
       min-width: 0;
-      padding: 8px 2px 2px;
-      border-radius: 8px;
-      background: transparent;
-      color: #606976;
+      text-align: center;
+      padding: 0 8px;
+      border-left: 1px solid #eff1f4;
     }
 
-    .option::before {
-      content: "";
+    .profile-stat span {
       display: block;
-      width: 35px;
-      height: 35px;
-      margin: 0 auto 5px;
-      border-radius: 10px 10px 12px 12px;
-      background: #e1e4e8;
-      clip-path: polygon(36% 100%, 80% 100%, 80% 45%, 100% 45%, 100% 18%, 70% 18%, 66% 0, 48% 0, 42% 18%, 20% 18%, 20% 45%, 36% 45%);
+      color: #9aa0aa;
+      font-size: 13px;
+      margin-bottom: 9px;
     }
 
-    .option:hover::before, .option.selected::before { background: var(--orange); }
-    .option span { display: block; font-size: 11px; line-height: 1.25; }
-
-    .empty {
-      padding: 28px 18px;
-      text-align: center;
-      color: var(--muted);
+    .profile-stat b {
+      display: block;
+      color: var(--green);
+      font-size: 18px;
+      line-height: 1.2;
+      font-weight: 900;
     }
 
-    .done-panel {
-      margin: 18px;
-      border-radius: 8px;
-      padding: 22px 18px;
-      text-align: center;
-    }
-
-    .done-panel h2 { margin: 0; font-size: 24px; }
-    .done-panel p { color: var(--muted); line-height: 1.6; }
-
-    .done-actions {
-      display: grid;
-      gap: 10px;
-      margin-top: 18px;
-    }
-
-    .history-list { display: grid; gap: 10px; }
-
-    .bottom-nav {
-      position: fixed;
-      left: 50%;
-      bottom: 0;
-      transform: translateX(-50%);
-      width: min(100%, 430px);
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      padding: 10px 18px calc(10px + env(safe-area-inset-bottom));
-      background: rgba(255, 250, 245, .96);
-      border-top: 1px solid rgba(234, 223, 211, .9);
-      box-shadow: 0 -12px 30px rgba(78, 54, 28, .1);
-      z-index: 5;
-    }
-
-    .tab-btn {
-      height: 42px;
-      border-radius: 999px;
-      color: #6b7280;
+    .rule-entry {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin: 18px 4px 20px;
       background: transparent;
-      font-weight: 800;
+      color: #8a8f99;
+      font-size: 14px;
+      padding: 0;
     }
 
-    .tab-btn.active {
-      color: #fff;
-      background: var(--orange);
-    }
-
-    .history-item {
-      border-radius: 8px;
-      padding: 12px 14px;
-    }
-
-    .history-item strong { display: block; margin-bottom: 8px; }
-
-    .history-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .tag {
+    .rule-entry::before {
+      content: "?";
+      width: 18px;
+      height: 18px;
       border-radius: 999px;
-      background: #f1f5f9;
-      color: #475569;
-      padding: 4px 8px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #aeb4bd;
+      color: #8a8f99;
       font-size: 12px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 14px;
+      font-size: 21px;
+      font-weight: 900;
+    }
+
+    .section-title::before {
+      content: "";
+      width: 5px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--green);
+    }
+
+    .task-list { border-radius: 8px; overflow: hidden; background: #fff; box-shadow: var(--shadow); }
+    .task-card {
+      display: grid;
+      grid-template-columns: 72px 1fr 78px;
+      align-items: center;
+      min-height: 96px;
+      padding: 0 14px 0 0;
+      background: #fff;
+    }
+    .task-card + .task-card { border-top: 1px solid #edf0f3; }
+
+    .task-reward { text-align: center; color: #5f6672; font-size: 13px; }
+    .task-reward b { display: block; color: #7fd323; font-size: 16px; margin-bottom: 2px; }
+    .task-main h2 { margin: 0 0 6px; font-size: 20px; line-height: 1.25; }
+    .task-progress-text { color: #8a8f99; font-size: 13px; }
+    .task-action { justify-self: end; color: #b4bbc5; font-size: 24px; background: transparent; }
+    .task-action::after { content: ">"; }
+    .task-action span { display: none; }
+
+    .empty-page { padding: 36px 12px; color: #8a8f99; text-align: center; }
+    .history-item { padding: 14px; border-radius: 8px; background: #fff; box-shadow: var(--shadow); }
+    .history-item + .history-item { margin-top: 10px; }
+    .history-item strong { display: block; margin-bottom: 8px; }
+    .history-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag { border-radius: 999px; background: #f1f5f9; color: #64748b; padding: 4px 8px; font-size: 12px; font-weight: 700; }
+
+    .survey-screen { background: linear-gradient(180deg, #ff9f42 0%, #fff4eb 42%, #fffaf7 100%); }
+    .survey-head {
+      padding: 16px 18px 10px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 85% 22%, rgba(255,255,255,.28) 0 11%, transparent 12%),
+        linear-gradient(180deg, #f89c3b 0%, #f27524 100%);
+    }
+
+    .survey-topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .survey-topbar .back-btn { color: #fff; }
+    .survey-title { font-size: 20px; font-weight: 760; }
+    .survey-headline { margin: 0; font-size: 30px; line-height: 1.14; letter-spacing: 0; }
+    .survey-pill {
+      display: inline-flex;
+      align-items: center;
+      margin-top: 14px;
+      padding: 7px 18px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.18);
+      color: rgba(255,255,255,.94);
+      font-size: 14px;
       font-weight: 700;
     }
 
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 86px;
-      transform: translateX(-50%) translateY(18px);
-      width: min(360px, calc(100vw - 36px));
-      padding: 12px 14px;
-      border-radius: 999px;
+    .answer-nav { padding: 12px 0 4px; }
+    .survey-meta { margin-bottom: 8px; color: rgba(255,255,255,.92); font-size: 13px; }
+    .thumbs { display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none; }
+    .thumbs::-webkit-scrollbar { display: none; }
+    .answer-thumb {
+      flex: 0 0 54px;
+      height: 54px;
+      border-radius: 8px;
+      border: 2px solid rgba(255,255,255,.55);
+      background: var(--thumb-color, #fff);
+      display: grid;
+      place-items: center;
       color: #fff;
-      background: rgba(17, 24, 39, .92);
-      text-align: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: .2s ease;
-      z-index: 10;
+      font-weight: 900;
+      box-shadow: 0 8px 16px rgba(126,55,13,.15);
+      opacity: .72;
+    }
+    .answer-thumb.current { opacity: 1; border-color: #fff; outline: 2px solid #df6417; }
+    .answer-thumb.done { opacity: .42; }
+
+    .concept-wrap { padding: 18px 18px 40px; }
+    .concept-shell {
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+      border: 3px solid #df7b2a;
+      box-shadow: 0 18px 44px rgba(147, 71, 26, .16);
     }
 
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
+    .poster { border-radius: 6px; overflow: hidden; background: #fff; }
+    .poster-art {
+      min-height: 292px;
+      padding: 22px 20px 18px;
+      background:
+        radial-gradient(circle at 50% 72%, rgba(255,255,255,.9) 0 13%, transparent 14%),
+        linear-gradient(180deg, color-mix(in srgb, var(--accent) 14%, #fff), #fff 42%, color-mix(in srgb, var(--accent) 24%, #fff));
+      display: grid;
+      align-items: end;
     }
+    .poster-art h2 { margin: 0 0 14px; color: color-mix(in srgb, var(--accent) 66%, #2b1d16); font-size: 31px; line-height: 1.08; text-align: center; }
+    .poster-product {
+      width: 118px;
+      height: 154px;
+      margin: 0 auto;
+      border-radius: 28px 28px 18px 18px;
+      background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--accent) 58%, #fff));
+      border: 3px solid rgba(255,255,255,.88);
+      box-shadow: 0 16px 30px rgba(30, 41, 59, .18);
+      position: relative;
+    }
+    .poster-product::before { content: ""; position: absolute; top: -22px; left: 36px; width: 46px; height: 24px; border-radius: 10px 10px 4px 4px; background: color-mix(in srgb, var(--accent) 72%, #fff); }
+    .poster-product b { position: absolute; left: 12px; right: 12px; top: 58px; text-align: center; font-size: 18px; line-height: 1.12; }
+    .poster-info { padding: 14px 18px 18px; }
+    .price { display: flex; align-items: baseline; gap: 10px; font-weight: 900; }
+    .price b { color: var(--orange); font-size: 28px; }
+    .price span { color: #111827; font-size: 23px; }
+    .poster-info p { margin: 8px 0 0; color: #6b7280; font-size: 13px; line-height: 1.45; }
+
+    .question-box { padding: 18px 4px 4px; text-align: center; }
+    .question-title { margin: 0 0 16px; font-size: 18px; line-height: 1.38; font-weight: 700; }
+    .options { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+    .option { min-width: 0; padding: 8px 1px 2px; border-radius: 8px; background: transparent; color: #6b7280; }
+    .option::before { content: ""; display: block; width: 29px; height: 29px; margin: 0 auto 6px; border-radius: 8px; background: #dfe3e8; clip-path: polygon(36% 100%, 80% 100%, 80% 45%, 100% 45%, 100% 18%, 70% 18%, 66% 0, 48% 0, 42% 18%, 20% 18%, 20% 45%, 36% 45%); }
+    .option.selected::before { background: var(--orange); }
+    .option span { display: block; font-size: 10px; line-height: 1.22; }
+    .feedback-input { width: 100%; min-height: 110px; resize: none; border: 1px solid #edf0f3; border-radius: 8px; padding: 12px; color: var(--ink); background: #fafafa; outline: none; line-height: 1.5; }
+    .submit-answer { width: 100%; height: 44px; margin-top: 14px; border-radius: 999px; color: #fff; background: var(--orange); font-size: 17px; font-weight: 900; }
+    .submit-answer:disabled { opacity: .45; cursor: not-allowed; }
+
+    .done-panel { margin: 18px; border-radius: 8px; padding: 24px 18px; background: #fff; text-align: center; box-shadow: var(--shadow); }
+    .done-panel h2 { margin: 0 0 8px; font-size: 22px; }
+    .done-panel p { color: #6b7280; line-height: 1.6; }
+    .done-actions { display: grid; gap: 10px; margin-top: 18px; }
+    .primary, .secondary { height: 42px; border-radius: 999px; font-weight: 900; }
+    .primary { color: #fff; background: var(--orange); }
+    .secondary { color: #374151; background: #eef2f7; }
+
+    .modal { position: fixed; inset: 0; display: none; place-items: end center; background: rgba(17,24,39,.38); z-index: 20; }
+    .modal.open { display: grid; }
+    .modal-card { width: min(100%, 430px); border-radius: 16px 16px 0 0; padding: 20px 18px 24px; background: #fff; }
+    .modal-card h2 { margin: 0 0 12px; font-size: 20px; }
+    .modal-card p { margin: 10px 0; color: #596170; line-height: 1.6; }
+    .modal-card .primary { width: 100%; margin-top: 12px; }
+    .toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(18px); width: min(360px, calc(100vw - 36px)); padding: 12px 14px; border-radius: 999px; color: #fff; background: rgba(17, 24, 39, .92); text-align: center; opacity: 0; pointer-events: none; transition: .2s ease; z-index: 30; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     @media (max-width: 360px) {
-      .hero h1 { font-size: 24px; }
-      .task-hero h1 { font-size: 27px; }
-      .poster-art h2 { font-size: 29px; }
-      .options { gap: 2px; }
-      .option span { font-size: 10px; }
+      .app-head { grid-template-columns: 36px 1fr 98px; }
+      .app-title { font-size: 19px; }
+      .task-main h2 { font-size: 18px; }
+      .survey-headline { font-size: 26px; }
+      .poster-art h2 { font-size: 27px; }
+      .option span { font-size: 9px; }
     }
   </style>
 </head>
 <body>
   <main class="app">
     <div class="statusbar"></div>
+
     <section id="homeScreen" class="screen active">
-      <div class="hero">
-        <h1>概念卡任务调研</h1>
-        <div class="login-status">已登录 · 开源社区用户</div>
-        <span class="hero-pill">全部答完，就有机会领奖</span>
-        <div class="user-row">
-          <div class="metric"><b id="growthValue">0</b><span>成长值</span></div>
-          <div class="metric"><b id="vitalityTree">0</b><span>元气树</span></div>
-        </div>
+      <header class="app-head">
+        <button class="back-btn" aria-label="返回">‹</button>
+        <h1 class="app-title">口味测试</h1>
+        <div class="mini-actions"><span>•••</span><i></i><span>◎</span></div>
+      </header>
+      <div class="home-tabs">
+        <button class="home-tab active" data-tab="tasks">可用任务</button>
+        <button class="home-tab" data-tab="submitted">已提交</button>
       </div>
-      <div class="content">
+      <div class="home-body">
+        <section class="profile-card">
+          <div class="avatar" id="avatar">开</div>
+          <div class="profile-stat"><span>当前等级</span><b id="levelValue">元气玩家</b></div>
+          <div class="profile-stat"><span>成长值</span><b id="growthValue">0/0</b></div>
+          <div class="profile-stat"><span>元气树</span><b id="vitalityTree">0</b></div>
+        </section>
+        <button id="ruleEntry" class="rule-entry">任务规则说明</button>
+
         <div id="taskPage" class="home-page active">
-          <div class="section-title"><span>任务卡</span><small>低完成度优先分发</small></div>
+          <h2 class="section-title">任务</h2>
           <div id="taskList" class="task-list"></div>
         </div>
-        <div id="minePage" class="home-page">
-          <div class="section-title"><span>我的</span><small id="historyCount">0 条</small></div>
-          <div id="historyList" class="history-list"></div>
+        <div id="submittedPage" class="home-page">
+          <h2 class="section-title">已提交</h2>
+          <div id="historyList"></div>
         </div>
       </div>
-      <nav class="bottom-nav" aria-label="页面切换">
-        <button class="tab-btn active" data-tab="tasks">任务卡</button>
-        <button class="tab-btn" data-tab="mine">我的</button>
-      </nav>
     </section>
 
-    <section id="surveyScreen" class="screen">
-      <div class="topbar">
-        <button class="back" id="backHome" aria-label="返回">‹</button>
-        <div id="surveyTopTitle" class="top-title">概念卡调研</div>
-      </div>
-      <div class="task-hero">
-        <h1 id="taskHeroTitle">任务卡</h1>
-        <p id="taskHeroText">全部答完，就有机会领奖哦～</p>
-      </div>
-      <div id="thumbs" class="thumbs"></div>
+    <section id="surveyScreen" class="screen survey-screen">
+      <header class="survey-head">
+        <div class="survey-topbar">
+          <button class="back-btn" id="backHome" aria-label="返回">‹</button>
+          <div id="surveyTopTitle" class="survey-title">口味测试</div>
+        </div>
+        <h1 id="taskHeroTitle" class="survey-headline">淘宝推荐了饮料给你</h1>
+        <span class="survey-pill">全部答完，就有机会领奖哦～</span>
+        <div class="answer-nav">
+          <div id="surveyMeta" class="survey-meta">第 1 / 1 张 · 0 人参与</div>
+          <div id="thumbs" class="thumbs"></div>
+        </div>
+      </header>
       <div id="conceptArea" class="concept-wrap"></div>
     </section>
+
+    <div id="ruleModal" class="modal" aria-hidden="true">
+      <div class="modal-card">
+        <h2>任务规则说明</h2>
+        <p><b>答题规则：</b>进入任务后会从飞书配置中随机生成 1-10 张答题卡，每张卡需完成 2 道题。</p>
+        <p><b>成长值：</b>完成本次任务后记录成长值奖励，Demo 阶段仅展示状态。</p>
+        <p><b>元气树：</b>完成任务后进入人工审核，审核通过后发放。</p>
+        <button id="closeRule" class="primary">知道了</button>
+      </div>
+    </div>
 
     <div id="toast" class="toast"></div>
   </main>
 
   <script src="survey-engine.js"></script>
   <script>
-    const storageKey = "concept-card-demo-state-v1";
+    const storageKey = "concept-card-demo-state-v2";
     const engine = window.SurveyEngine;
     const userId = "community-user-1024";
     const initialState = engine.createSurveyState();
     const savedState = localStorage.getItem(storageKey);
     let state = savedState ? JSON.parse(savedState) : initialState;
     let currentTaskId = null;
-    let currentDemo = null;
-    let isSubmitting = false;
+    let currentSessionId = null;
+    let currentStep = null;
+    let pendingValue = "";
 
     const els = {
       home: document.getElementById("homeScreen"),
       survey: document.getElementById("surveyScreen"),
-      taskPage: document.getElementById("taskPage"),
-      minePage: document.getElementById("minePage"),
       tabs: document.querySelectorAll("[data-tab]"),
+      taskPage: document.getElementById("taskPage"),
+      submittedPage: document.getElementById("submittedPage"),
       taskList: document.getElementById("taskList"),
       historyList: document.getElementById("historyList"),
-      historyCount: document.getElementById("historyCount"),
+      avatar: document.getElementById("avatar"),
+      levelValue: document.getElementById("levelValue"),
       growthValue: document.getElementById("growthValue"),
       vitalityTree: document.getElementById("vitalityTree"),
+      ruleEntry: document.getElementById("ruleEntry"),
+      ruleModal: document.getElementById("ruleModal"),
+      closeRule: document.getElementById("closeRule"),
       backHome: document.getElementById("backHome"),
       surveyTopTitle: document.getElementById("surveyTopTitle"),
       taskHeroTitle: document.getElementById("taskHeroTitle"),
-      taskHeroText: document.getElementById("taskHeroText"),
+      surveyMeta: document.getElementById("surveyMeta"),
       thumbs: document.getElementById("thumbs"),
       conceptArea: document.getElementById("conceptArea"),
       toast: document.getElementById("toast")
     };
 
-    function save() {
-      localStorage.setItem(storageKey, JSON.stringify(state));
-    }
-
+    function save() { localStorage.setItem(storageKey, JSON.stringify(state)); }
     function showToast(message) {
       els.toast.textContent = message;
       els.toast.classList.add("show");
       window.clearTimeout(showToast.timer);
       showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1300);
     }
-
     function switchScreen(name) {
       els.home.classList.toggle("active", name === "home");
       els.survey.classList.toggle("active", name === "survey");
       window.scrollTo({ top: 0, behavior: "instant" });
     }
-
     function switchHomeTab(name) {
       els.taskPage.classList.toggle("active", name === "tasks");
-      els.minePage.classList.toggle("active", name === "mine");
+      els.submittedPage.classList.toggle("active", name === "submitted");
       els.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === name));
       window.scrollTo({ top: 0, behavior: "instant" });
     }
 
     function renderHome() {
       const user = state.user;
-      els.growthValue.textContent = user.growthValue;
+      els.avatar.textContent = user.avatar;
+      els.levelValue.textContent = user.level;
+      els.growthValue.textContent = `${user.growthValue}/${user.growthTarget}`;
       els.vitalityTree.textContent = user.vitalityTree;
       els.taskList.innerHTML = "";
       state.tasks.filter((task) => task.status === "online").sort((a, b) => a.order - b.order).forEach((task) => {
         const progress = engine.getTaskProgress(state, userId, task.id);
-        const percent = progress.total ? Math.round(progress.answered / progress.total * 100) : 0;
         const card = document.createElement("article");
         card.className = "task-card";
         card.innerHTML = `
-          <div class="task-card-top">
-            <div>
-              <h2>${task.title}</h2>
-            </div>
-            <span class="task-badge">${progress.available} 张可答</span>
+          <div class="task-reward"><b>+20</b>成长值</div>
+          <div class="task-main">
+            <h2>${task.title}</h2>
+            <div class="task-progress-text">已答题 ${progress.answered} / 未答题 ${progress.unanswered}</div>
           </div>
-          <div class="progress"><i style="width:${percent}%"></i></div>
-          <div class="task-actions">
-            <span>答题进度 ${progress.answered}/${progress.total}</span>
-            <button class="primary" data-task="${task.id}">${progress.available ? "进入任务" : "查看结果"}</button>
-          </div>
+          <button class="task-action" data-task="${task.id}" aria-label="答题"><span>答题</span></button>
         `;
         els.taskList.appendChild(card);
       });
-      els.taskList.querySelectorAll("[data-task]").forEach((button) => {
-        button.addEventListener("click", () => startTask(button.dataset.task));
-      });
+      els.taskList.querySelectorAll("[data-task]").forEach((button) => button.addEventListener("click", () => startTask(button.dataset.task)));
       renderHistory();
     }
 
     function renderHistory() {
       const history = engine.getHistory(state, userId);
-      els.historyCount.textContent = `${history.length} 条`;
-      els.historyList.innerHTML = history.map((item) => `
+      if (!history.some((item) => item.answered > 0)) {
+        els.historyList.innerHTML = `<div class="empty-page">还没有已提交的口味测试</div>`;
+        return;
+      }
+      els.historyList.innerHTML = history.filter((item) => item.answered > 0).map((item) => `
         <article class="history-item">
           <strong>${item.title}</strong>
           <div class="history-meta">
@@ -691,36 +513,46 @@
     function startTask(taskId) {
       currentTaskId = taskId;
       const task = state.tasks.find((item) => item.id === taskId);
+      const session = engine.startTaskSession(state, userId, taskId);
+      currentSessionId = session.id;
       els.surveyTopTitle.textContent = task.title;
       els.taskHeroTitle.textContent = task.hero;
-      els.taskHeroText.textContent = task.rewardText;
       switchScreen("survey");
-      showNextDemo();
+      save();
+      showCurrentStep();
     }
 
-    function showNextDemo() {
-      currentDemo = engine.getNextDemo(state, userId, currentTaskId);
+    function showCurrentStep() {
+      currentStep = engine.getCurrentStep(state, userId, currentSessionId);
+      pendingValue = "";
       renderThumbs();
-      if (!currentDemo) {
+      if (!currentStep) {
         renderDone();
         save();
         return;
       }
-      renderConcept(currentDemo);
+      renderConcept(currentStep);
+      save();
     }
 
     function renderThumbs() {
-      const demos = state.demos.filter((demo) => demo.taskId === currentTaskId && demo.status === "online");
+      const session = state.sessions.find((item) => item.id === currentSessionId);
+      const demos = session ? engine.getSessionDemos(state, session) : [];
+      const currentIndex = currentStep ? currentStep.cardIndex : demos.length;
+      const participants = currentStep ? currentStep.participantCount : 0;
+      els.surveyMeta.textContent = `第 ${Math.min(currentIndex + 1, Math.max(demos.length, 1))} / ${Math.max(demos.length, 1)} 张 · ${participants} 人参与`;
       els.thumbs.innerHTML = demos.map((demo, index) => {
-        const done = state.answers.some((answer) => answer.userId === userId && answer.demoId === demo.id && answer.questionId === demo.question.id);
-        const full = demo.answerCount + state.answers.filter((answer) => answer.demoId === demo.id).length >= demo.targetAnswers;
-        const active = currentDemo && demo.id === currentDemo.id;
-        return `<div class="thumb ${done || full ? "done" : ""} ${active ? "current" : ""}" style="--thumb-color:${demo.art.accent}">${index + 1}</div>`;
+        const done = demo.questions.every((question) => state.answers.some((answer) => answer.userId === userId && answer.demoId === demo.id && answer.questionId === question.id));
+        return `<div class="answer-thumb ${index === currentIndex ? "current" : ""} ${done ? "done" : ""}" style="--thumb-color:${demo.art.accent}">${index + 1}</div>`;
       }).join("");
     }
 
-    function renderConcept(demo) {
-      const currentAnswers = demo.currentAnswers ?? demo.answerCount;
+    function renderConcept(step) {
+      const demo = step.demo;
+      const question = step.question;
+      const questionBody = question.type === "choice"
+        ? `<div class="options">${question.options.map((option) => `<button class="option" data-value="${option.id}"><span>${option.label}</span></button>`).join("")}</div>`
+        : `<textarea class="feedback-input" placeholder="${question.placeholder}" maxlength="120"></textarea>`;
       els.conceptArea.innerHTML = `
         <div class="concept-shell">
           <div class="poster" style="--accent:${demo.art.accent}">
@@ -731,71 +563,75 @@
               </div>
             </div>
             <div class="poster-info">
-              <strong>${demo.brand}</strong>
-              <p>${demo.category} · ${demo.sellingPoint}</p>
               <div class="price"><b>${demo.price}</b><span>${demo.spec}</span></div>
+              <p>${demo.category} · ${demo.sellingPoint}</p>
             </div>
           </div>
-          <div class="question">
-            <h3>${demo.question.text}</h3>
-            <div class="options">
-              ${demo.question.options.map((option) => `<button class="option" data-option="${option.id}"><span>${option.label}</span></button>`).join("")}
-            </div>
+          <div class="question-box">
+            <h3 class="question-title">${question.text}</h3>
+            ${questionBody}
+            <button id="submitAnswer" class="submit-answer" disabled>提交</button>
           </div>
         </div>
       `;
-      els.conceptArea.querySelectorAll("[data-option]").forEach((button) => {
-        button.addEventListener("click", () => answerDemo(button));
-      });
-      showToast(`当前已收集 ${currentAnswers}/${demo.targetAnswers} 份`);
+      const submit = document.getElementById("submitAnswer");
+      if (question.type === "choice") {
+        els.conceptArea.querySelectorAll(".option").forEach((button) => {
+          button.addEventListener("click", () => {
+            els.conceptArea.querySelectorAll(".option").forEach((item) => item.classList.remove("selected"));
+            button.classList.add("selected");
+            pendingValue = button.dataset.value;
+            submit.disabled = false;
+          });
+        });
+      } else {
+        const textarea = els.conceptArea.querySelector("textarea");
+        textarea.addEventListener("input", () => {
+          pendingValue = textarea.value;
+          submit.disabled = textarea.value.trim().length < question.minLength;
+        });
+      }
+      submit.addEventListener("click", submitCurrentAnswer);
     }
 
-    function answerDemo(button) {
-      if (isSubmitting || !currentDemo) return;
-      isSubmitting = true;
-      button.classList.add("selected");
+    function submitCurrentAnswer() {
+      if (!currentStep || !pendingValue) return;
       const result = engine.submitAnswer(state, {
         userId,
-        taskId: currentTaskId,
-        demoId: currentDemo.id,
-        questionId: currentDemo.question.id,
-        optionId: button.dataset.option
+        sessionId: currentSessionId,
+        demoId: currentStep.demo.id,
+        questionId: currentStep.question.id,
+        value: pendingValue
       });
-      save();
       if (result.status !== "accepted") {
         showToast(statusText(result.status));
-        isSubmitting = false;
-        renderConcept(currentDemo);
         return;
       }
-      showToast("已提交，进入下一张");
-      window.setTimeout(() => {
-        isSubmitting = false;
-        showNextDemo();
-      }, 480);
+      save();
+      showCurrentStep();
     }
 
     function statusText(status) {
       return {
-        duplicate: "这张已答过，不能修改",
+        duplicate: "这道题已提交，不能修改",
         full: "这张已收满 100 份",
-        unavailable: "这张暂不可答",
-        "invalid-question": "题目状态异常",
-        "invalid-option": "选项状态异常"
+        unavailable: "当前任务不可答",
+        "invalid-text": "请写下至少 5 个字的建议",
+        "invalid-option": "请选择一个答案"
       }[status] || "提交失败，请重试";
     }
 
     function renderDone() {
       const currentIndex = state.tasks.findIndex((task) => task.id === currentTaskId);
-      const nextTask = state.tasks.slice(currentIndex + 1).find((task) => task.status === "online" && engine.getTaskProgress(state, userId, task.id).available > 0);
+      const nextTask = state.tasks.slice(currentIndex + 1).find((task) => task.status === "online" && engine.getTaskProgress(state, userId, task.id).unanswered > 0);
       const history = engine.getHistory(state, userId).find((item) => item.taskId === currentTaskId);
       els.conceptArea.innerHTML = `
         <div class="done-panel">
-          <h2>本任务卡答题结束</h2>
-          <p>当前任务已答 ${history.answered}/${history.total}。成长值状态：${history.growthStatus}；元气树状态：${history.vitalityStatus}。</p>
+          <h2>本任务答题结束</h2>
+          <p>当前任务已答 ${history.answered}/${history.total}。成长值和元气树奖励状态可在已提交中查看。</p>
           <div class="done-actions">
-            ${nextTask ? `<button class="primary" id="nextTask">进入下一个任务卡</button>` : ""}
-            <button class="secondary" id="homeAgain">返回我的记录</button>
+            ${nextTask ? `<button class="primary" id="nextTask">进入下一个任务</button>` : ""}
+            <button class="secondary" id="homeAgain">返回已提交</button>
           </div>
         </div>
       `;
@@ -804,23 +640,17 @@
       document.getElementById("homeAgain").addEventListener("click", () => {
         renderHome();
         switchScreen("home");
-        switchHomeTab("mine");
+        switchHomeTab("submitted");
       });
     }
 
-    els.backHome.addEventListener("click", () => {
-      renderHome();
-      switchScreen("home");
-    });
-
-    els.tabs.forEach((tab) => {
-      tab.addEventListener("click", () => switchHomeTab(tab.dataset.tab));
-    });
+    els.tabs.forEach((tab) => tab.addEventListener("click", () => switchHomeTab(tab.dataset.tab)));
+    els.ruleEntry.addEventListener("click", () => els.ruleModal.classList.add("open"));
+    els.closeRule.addEventListener("click", () => els.ruleModal.classList.remove("open"));
+    els.ruleModal.addEventListener("click", (event) => { if (event.target === els.ruleModal) els.ruleModal.classList.remove("open"); });
+    els.backHome.addEventListener("click", () => { renderHome(); switchScreen("home"); });
 
     renderHome();
   </script>
 </body>
 </html>
-
-
-
