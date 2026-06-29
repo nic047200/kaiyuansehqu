@@ -16,12 +16,23 @@ const { pathToFileURL } = require("url");
   await page.goto(pathToFileURL(path.resolve("h5-concept-card-demo.html")).href);
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  await page.waitForSelector(".task-card");
+  await page.waitForSelector("#taskPage.active .task-card");
 
-  const taskCount = await page.locator(".task-card").count();
+  const taskCount = await page.locator("#taskPage.active .task-card").count();
   if (taskCount !== 2) throw new Error(`expected 2 task cards, got ${taskCount}`);
+  const historyVisibleOnTaskPage = await page.locator("#taskPage.active .history-item").count();
+  if (historyVisibleOnTaskPage !== 0) throw new Error("history should not be rendered on task page");
+  if (await page.locator("#minePage").isVisible()) throw new Error("mine page should be hidden while task page is active");
 
-  await page.locator('[data-task="task-ai"]').click();
+  await page.locator('[data-tab="mine"]').click();
+  await page.waitForSelector("#minePage.active .history-item");
+  const taskVisibleOnMinePage = await page.locator("#minePage.active .task-card").count();
+  if (taskVisibleOnMinePage !== 0) throw new Error("task cards should not be rendered on mine page");
+  if (await page.locator("#taskPage").isVisible()) throw new Error("task page should be hidden while mine page is active");
+
+  await page.locator('[data-tab="tasks"]').click();
+  await page.waitForSelector("#taskPage.active .task-card");
+  await page.locator('#taskPage [data-task="task-ai"]').click();
   await page.waitForSelector(".concept-shell");
   const title = await page.locator(".poster-art h2").textContent();
   const firstIsLowCompletion = title.includes("测试失败后自动定位原因") || title.includes("根据改动生成最小测试集");
@@ -44,5 +55,3 @@ const { pathToFileURL } = require("url");
   console.error(error);
   process.exit(1);
 });
-
-

@@ -83,6 +83,9 @@
     .screen { display: none; }
     .screen.active { display: block; }
 
+    .home-page { display: none; }
+    .home-page.active { display: block; }
+
     .hero {
       padding: 20px 18px 24px;
       color: #fff;
@@ -116,7 +119,7 @@
       font-size: 14px;
     }
 
-    .content { padding: 18px; }
+    .content { padding: 18px 18px 86px; }
 
     .user-row {
       display: grid;
@@ -431,6 +434,35 @@
 
     .history-list { display: grid; gap: 10px; }
 
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: min(100%, 430px);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 10px 18px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(255, 250, 245, .96);
+      border-top: 1px solid rgba(234, 223, 211, .9);
+      box-shadow: 0 -12px 30px rgba(78, 54, 28, .1);
+      z-index: 5;
+    }
+
+    .tab-btn {
+      height: 42px;
+      border-radius: 999px;
+      color: #6b7280;
+      background: transparent;
+      font-weight: 800;
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      background: var(--orange);
+    }
+
     .history-item {
       border-radius: 8px;
       padding: 12px 14px;
@@ -456,7 +488,7 @@
     .toast {
       position: fixed;
       left: 50%;
-      bottom: 28px;
+      bottom: 86px;
       transform: translateX(-50%) translateY(18px);
       width: min(360px, calc(100vw - 36px));
       padding: 12px 14px;
@@ -497,11 +529,19 @@
           <div class="metric"><b id="growthValue">0</b><span>成长值</span></div>
           <div class="metric"><b id="vitalityTree">0</b><span>元气树</span></div>
         </div>
-        <div class="section-title"><span>任务卡</span><small>低完成度优先分发</small></div>
-        <div id="taskList" class="task-list"></div>
-        <div class="section-title"><span>我的记录</span><small id="historyCount">0 条</small></div>
-        <div id="historyList" class="history-list"></div>
+        <div id="taskPage" class="home-page active">
+          <div class="section-title"><span>任务卡</span><small>低完成度优先分发</small></div>
+          <div id="taskList" class="task-list"></div>
+        </div>
+        <div id="minePage" class="home-page">
+          <div class="section-title"><span>我的</span><small id="historyCount">0 条</small></div>
+          <div id="historyList" class="history-list"></div>
+        </div>
       </div>
+      <nav class="bottom-nav" aria-label="页面切换">
+        <button class="tab-btn active" data-tab="tasks">任务卡</button>
+        <button class="tab-btn" data-tab="mine">我的</button>
+      </nav>
     </section>
 
     <section id="surveyScreen" class="screen">
@@ -535,6 +575,9 @@
     const els = {
       home: document.getElementById("homeScreen"),
       survey: document.getElementById("surveyScreen"),
+      taskPage: document.getElementById("taskPage"),
+      minePage: document.getElementById("minePage"),
+      tabs: document.querySelectorAll("[data-tab]"),
       taskList: document.getElementById("taskList"),
       historyList: document.getElementById("historyList"),
       historyCount: document.getElementById("historyCount"),
@@ -563,6 +606,13 @@
     function switchScreen(name) {
       els.home.classList.toggle("active", name === "home");
       els.survey.classList.toggle("active", name === "survey");
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+
+    function switchHomeTab(name) {
+      els.taskPage.classList.toggle("active", name === "tasks");
+      els.minePage.classList.toggle("active", name === "mine");
+      els.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === name));
       window.scrollTo({ top: 0, behavior: "instant" });
     }
 
@@ -729,6 +779,7 @@
       document.getElementById("homeAgain").addEventListener("click", () => {
         renderHome();
         switchScreen("home");
+        switchHomeTab("mine");
       });
     }
 
@@ -737,7 +788,14 @@
       switchScreen("home");
     });
 
+    els.tabs.forEach((tab) => {
+      tab.addEventListener("click", () => switchHomeTab(tab.dataset.tab));
+    });
+
     renderHome();
   </script>
 </body>
 </html>
+
+
+
