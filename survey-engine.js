@@ -107,7 +107,11 @@
       demo("coffee-03", "task-coffee", "厚乳冰拿铁", "厚乳研究所", "厚乳咖啡", "奶感更强，入口顺滑不苦。", "¥8元", "300mL", 18, "online", "#b08968", "milk", "assets/posters/poster-07.jpg"),
       demo("coffee-04", "task-coffee", "黑咖啡醒神瓶", "醒醒咖啡", "无糖黑咖", "0 糖 0 脂，早八通勤刚需。", "¥6元", "330mL", 22, "online", "#3f2f2a", "black", "assets/posters/poster-08.jpg"),
       demo("coffee-05", "task-coffee", "椰椰生咖拿铁", "椰咖", "椰乳拿铁", "椰香和咖啡香融合，清爽轻负担。", "¥9元", "350mL", 36, "online", "#10b981", "coconut", "assets/posters/poster-09.png"),
-      demo("coffee-06", "task-coffee", "焦糖海盐拿铁", "海盐焦糖", "风味拿铁", "甜咸平衡，适合下午茶场景。", "¥9元", "300mL", 41, "online", "#d97706", "caramel", "assets/posters/poster-10.jpg")
+      demo("coffee-06", "task-coffee", "焦糖海盐拿铁", "海盐焦糖", "风味拿铁", "甜咸平衡，适合下午茶场景。", "¥9元", "300mL", 41, "online", "#d97706", "caramel", "assets/posters/poster-10.jpg"),
+      demo("coffee-07", "task-coffee", "榛果燕麦拿铁", "燕麦咖", "燕麦拿铁", "榛果香气明显，燕麦奶口感轻盈。", "¥8元", "330mL", 12, "online", "#a16207", "oat", "assets/posters/poster-01.jpg"),
+      demo("coffee-08", "task-coffee", "生椰美式气泡", "椰醒", "气泡美式", "咖啡苦香叠加椰香气泡，适合夏日场景。", "¥7元", "350mL", 15, "online", "#0ea5e9", "sparkle", "assets/posters/poster-02.jpg"),
+      demo("coffee-09", "task-coffee", "抹茶冷萃拿铁", "绿野咖啡", "抹茶拿铁", "抹茶清香和冷萃咖啡融合，甜感更低。", "¥9元", "300mL", 26, "online", "#65a30d", "matcha", "assets/posters/poster-03.jpg"),
+      demo("coffee-10", "task-coffee", "香草冰博客", "冰博客", "香草拿铁", "香草风味柔和，奶咖层次更明显。", "¥10元", "320mL", 31, "online", "#7c3aed", "vanilla", "assets/posters/poster-04.jpg")
     ],
     sessions: [],
     answers: [],

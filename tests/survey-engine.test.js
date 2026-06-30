@@ -59,7 +59,16 @@ test("coffee task cards include poster assets for thumbnail navigation", () => {
   const state = createSurveyState();
   const demos = getAvailableDemos(state, "user-demo", "task-coffee", () => 0.5);
 
-  assert(demos.length > 0);
+  assert(demos.length >= 10);
+  assert(demos.every((demo) => /^assets\/posters\/poster-\d{2}\.(jpg|png)$/.test(demo.poster)));
+});
+
+test("coffee task sessions create ten poster-backed navigation items", () => {
+  const state = createSurveyState();
+  const session = startTaskSession(state, "user-demo", "task-coffee", () => 0.5);
+  const demos = session.demoIds.map((id) => state.demos.find((demo) => demo.id === id));
+
+  assert.strictEqual(session.demoIds.length, 10);
   assert(demos.every((demo) => /^assets\/posters\/poster-\d{2}\.(jpg|png)$/.test(demo.poster)));
 });
 

@@ -63,8 +63,10 @@ const { pathToFileURL } = require("url");
   if (!posterSrc || !/assets\/posters\/poster-\d{2}\.(jpg|png)$/.test(posterSrc)) throw new Error(`expected real poster image, got ${posterSrc}`);
   const loadedPoster = await page.locator(".poster-image").first().evaluate((img) => img.complete && img.naturalWidth > 0 && img.naturalHeight > 0);
   if (!loadedPoster) throw new Error("poster image should load successfully");
-  const thumbImages = await page.locator(".answer-thumb img").count();
+  const thumbImages = await page.locator(".answer-thumb .thumb-image").count();
   if (thumbImages !== 10) throw new Error(`expected 10 poster thumbnails, got ${thumbImages}`);
+  const thumbBackgrounds = await page.locator(".answer-thumb .thumb-bg").count();
+  if (thumbBackgrounds !== 10) throw new Error(`expected 10 poster thumbnail backgrounds, got ${thumbBackgrounds}`);
 
   const questionTitles = await page.locator(".question-title").allTextContents();
   if (questionTitles.length !== 2) throw new Error(`expected both questions on one page, got ${questionTitles.length}`);
@@ -106,7 +108,7 @@ const { pathToFileURL } = require("url");
   await page.waitForTimeout(700);
   const toastText = await page.locator("#toast.show").textContent().catch(() => "");
   if (toastText.includes("已提交") || toastText.includes("不能修改")) throw new Error(`duplicate toast should not appear after rapid submit, got ${toastText}`);
-  const answered = await page.evaluate(() => JSON.parse(localStorage.getItem("concept-card-demo-state-v2")).answers.length);
+  const answered = await page.evaluate(() => JSON.parse(localStorage.getItem("concept-card-demo-state-v3")).answers.length);
   if (answered !== 2) throw new Error(`expected two persisted answers for one card, got ${answered}`);
 
   await page.screenshot({ path: "h5-concept-card-demo.png", fullPage: true });
