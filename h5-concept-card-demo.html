@@ -212,6 +212,8 @@
       font-weight: 900;
     }
 
+    #submittedPage .section-title { margin-top: 28px; }
+
     .section-title::before {
       content: "";
       width: 5px;
@@ -272,6 +274,25 @@
     .history-item + .history-item { margin-top: 10px; }
     .history-item strong { display: block; margin-bottom: 8px; }
     .history-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+    .history-sample-card {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid #edf0f3;
+    }
+    .history-sample-cover {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border-radius: var(--radius-sm);
+      background: #edf8e8;
+    }
+    .history-sample-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+    .history-sample-main { min-width: 0; }
+    .history-sample-eyebrow { margin: 0 0 5px; color: #8a8f99; font-size: 12px; font-weight: 800; }
+    .history-sample-card strong { margin-bottom: 7px; font-size: 18px; line-height: 1.25; }
     .tag { border-radius: 999px; background: #f1f5f9; color: #64748b; padding: 4px 8px; font-size: 12px; font-weight: 700; }
 
     .survey-screen { background: linear-gradient(180deg, #ff9f42 0%, #fff4eb 42%, #fffaf7 100%); overflow-y: auto; scrollbar-width: none; }
@@ -589,7 +610,20 @@
     function renderHistory() {
       const history = engine.getHistory(state, userId);
       if (!history.some((item) => item.answered > 0)) {
-        els.historyList.innerHTML = `<div class="empty-page">还没有已提交的口味测试</div>`;
+        els.historyList.innerHTML = `
+          <article class="history-item history-sample-card">
+            <div class="history-sample-cover"><img src="assets/posters/poster-03.jpg" alt="养生茶示例图"></div>
+            <div class="history-sample-main">
+              <p class="history-sample-eyebrow">示例任务卡</p>
+              <strong>养生茶</strong>
+              <div class="history-meta">
+                <span class="tag">已答 8/10</span>
+                <span class="tag">成长值 待发放</span>
+                <span class="tag">元气树 待审核</span>
+              </div>
+            </div>
+          </article>
+        `;
         return;
       }
       els.historyList.innerHTML = history.filter((item) => item.answered > 0).map((item) => `

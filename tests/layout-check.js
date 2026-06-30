@@ -35,14 +35,17 @@ const { pathToFileURL } = require("url");
   await page.waitForSelector("#submittedPage.active .profile-card");
   const profileMetrics = await page.evaluate(() => {
     const profile = document.querySelector("#submittedPage.active .profile-card").getBoundingClientRect();
+    const title = document.querySelector("#submittedPage.active .section-title").getBoundingClientRect();
     return {
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
-      profileWidth: profile.width
+      profileWidth: profile.width,
+      titleGap: title.top - profile.bottom
     };
   });
   if (profileMetrics.scrollWidth > profileMetrics.clientWidth) throw new Error(`submitted page horizontal overflow ${JSON.stringify(profileMetrics)}`);
   if (profileMetrics.profileWidth < 380) throw new Error(`profile card too narrow ${JSON.stringify(profileMetrics)}`);
+  if (profileMetrics.titleGap < 24) throw new Error(`submitted title should sit lower below profile card ${JSON.stringify(profileMetrics)}`);
 
   await page.locator('[data-tab="tasks"]').click();
   await page.waitForSelector("#taskPage.active .task-card");

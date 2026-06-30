@@ -52,6 +52,15 @@ const { pathToFileURL } = require("url");
   if (!/已答题\s*0\s*\/\s*未答题\s*\d+/.test(progressText)) throw new Error(`expected answered/unanswered progress, got ${progressText}`);
   if (!progressText.includes("答题")) throw new Error("task button should say 答题");
 
+  await page.locator('[data-tab="submitted"]').click();
+  await page.waitForSelector('#submittedPage.active .history-sample-card');
+  const sampleText = await page.locator('#submittedPage.active .history-sample-card').textContent();
+  for (const text of ["养生茶", "示例", "已答 8/10", "成长值 待发放"]) {
+    if (!sampleText.includes(text)) throw new Error(`sample submitted card missing ${text}`);
+  }
+  await page.locator('[data-tab="tasks"]').click();
+  await page.waitForSelector('#taskPage.active .task-card');
+
   await page.locator('#taskPage [data-task="task-soda"]').click();
   await page.waitForSelector("#surveyScreen.active .concept-shell");
   const navCount = await page.locator(".answer-thumb").count();
