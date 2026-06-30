@@ -32,6 +32,10 @@ const { pathToFileURL } = require("url");
 
   const taskTitles = await page.locator("#taskPage.active .task-card h2").allTextContents();
   if (taskTitles.join("|") !== "碳酸饮料|咖啡") throw new Error(`unexpected task titles ${taskTitles.join("|")}`);
+  const taskProgressTexts = await page.locator("#taskPage.active .task-progress-text").allTextContents();
+  if (taskProgressTexts.join("|") !== "已答题 0 / 未答题 10|已答题 0 / 未答题 10") {
+    throw new Error(`task progress should use ten-card task quota, got ${taskProgressTexts.join("|")}`);
+  }
   const systemText = await page.locator("body").textContent();
   for (const banned of ["低完成度", "分发", "随机出现", "张可答"]) {
     if (systemText.includes(banned)) throw new Error(`user-facing system rule should be hidden: ${banned}`);

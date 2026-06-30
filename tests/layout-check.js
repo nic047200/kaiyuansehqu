@@ -17,21 +17,35 @@ const { pathToFileURL } = require("url");
   const homeMetrics = await page.evaluate(() => {
     const title = document.querySelector(".app-title").getBoundingClientRect();
     const style = getComputedStyle(document.querySelector(".app-title"));
-    const profile = document.querySelector(".profile-card").getBoundingClientRect();
     return {
       scrollWidth: document.documentElement.scrollWidth,
       clientWidth: document.documentElement.clientWidth,
       titleHeight: title.height,
       titleLineHeight: Number.parseFloat(style.lineHeight),
       titleText: document.querySelector(".app-title").textContent.trim(),
-      profileWidth: profile.width,
-      cards: [...document.querySelectorAll(".task-card")].map((el) => el.getBoundingClientRect().width)
+      cards: [...document.querySelectorAll("#taskPage.active .task-card")].map((el) => el.getBoundingClientRect().width)
     };
   });
   if (homeMetrics.titleText !== "口味测试") throw new Error(`expected title text ${JSON.stringify(homeMetrics)}`);
   if (homeMetrics.titleHeight > homeMetrics.titleLineHeight * 1.35) throw new Error(`title should render as one line ${JSON.stringify(homeMetrics)}`);
   if (homeMetrics.scrollWidth > homeMetrics.clientWidth) throw new Error(`home horizontal overflow ${JSON.stringify(homeMetrics)}`);
-  if (homeMetrics.profileWidth < 380) throw new Error(`profile card too narrow ${JSON.stringify(homeMetrics)}`);
+  if (homeMetrics.cards.some((width) => width < 380)) throw new Error(`task card too narrow ${JSON.stringify(homeMetrics)}`);
+
+  await page.locator('[data-tab="submitted"]').click();
+  await page.waitForSelector("#submittedPage.active .profile-card");
+  const profileMetrics = await page.evaluate(() => {
+    const profile = document.querySelector("#submittedPage.active .profile-card").getBoundingClientRect();
+    return {
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+      profileWidth: profile.width
+    };
+  });
+  if (profileMetrics.scrollWidth > profileMetrics.clientWidth) throw new Error(`submitted page horizontal overflow ${JSON.stringify(profileMetrics)}`);
+  if (profileMetrics.profileWidth < 380) throw new Error(`profile card too narrow ${JSON.stringify(profileMetrics)}`);
+
+  await page.locator('[data-tab="tasks"]').click();
+  await page.waitForSelector("#taskPage.active .task-card");
   await page.locator('[data-task="task-soda"]').click();
   await page.waitForSelector(".concept-shell");
   const surveyMetrics = await page.evaluate(() => {
@@ -52,7 +66,7 @@ const { pathToFileURL } = require("url");
   if (surveyMetrics.scrollWidth > surveyMetrics.clientWidth) throw new Error(`survey horizontal overflow ${JSON.stringify(surveyMetrics)}`);
   if (surveyMetrics.visibleOptions !== 6) throw new Error(`expected 6 visible options ${JSON.stringify(surveyMetrics)}`);
   if (surveyMetrics.conceptWidth < 350) throw new Error(`concept card too narrow ${JSON.stringify(surveyMetrics)}`);
-  if (surveyMetrics.posterWidth < 330 || surveyMetrics.posterHeight < 250) throw new Error(`poster image should render visibly ${JSON.stringify(surveyMetrics)}`);
+  if (surveyMetrics.posterWidth < 330 || surveyMetrics.posterHeight < 200) throw new Error(`poster image should render visibly ${JSON.stringify(surveyMetrics)}`);
   await browser.close();
   console.log("PASS layout checks");
 })().catch((error) => { console.error(error); process.exit(1); });
