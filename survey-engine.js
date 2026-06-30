@@ -102,12 +102,12 @@
       demo("soda-10", "task-soda", "雪梨白茶气泡饮", "梨白白", "茶味气泡饮", "白茶清香搭配雪梨甜感，低负担。", "¥8元", "420mL", 16, "online", "#86efac", "pear", "assets/posters/poster-10.jpg"),
       demo("soda-11", "task-soda", "未上线碳酸卡", "草稿", "草稿", "不应展示。", "-", "-", 1, "draft", "#999999", "draft"),
       demo("soda-12", "task-soda", "已收满碳酸卡", "收满", "收满", "不应展示。", "-", "-", 100, "online", "#aaaaaa", "full"),
-      demo("coffee-01", "task-coffee", "小黄油拿铁", "JUST LATTE", "黄油拿铁", "冷萃拿铁 100% 深烘豆，奶香顺滑。", "¥5元", "400mL", 8, "online", "#f5b84b", "butter"),
-      demo("coffee-02", "task-coffee", "一只小羊冷萃拿铁", "LAMBY CAFF", "冷萃拿铁", "经典冷萃，灵感咖啡。", "¥5元", "250mL", 8, "online", "#c8a27a", "latte"),
-      demo("coffee-03", "task-coffee", "厚乳冰拿铁", "厚乳研究所", "厚乳咖啡", "奶感更强，入口顺滑不苦。", "¥8元", "300mL", 18, "online", "#b08968", "milk"),
-      demo("coffee-04", "task-coffee", "黑咖啡醒神瓶", "醒醒咖啡", "无糖黑咖", "0 糖 0 脂，早八通勤刚需。", "¥6元", "330mL", 22, "online", "#3f2f2a", "black"),
-      demo("coffee-05", "task-coffee", "椰椰生咖拿铁", "椰咖", "椰乳拿铁", "椰香和咖啡香融合，清爽轻负担。", "¥9元", "350mL", 36, "online", "#10b981", "coconut"),
-      demo("coffee-06", "task-coffee", "焦糖海盐拿铁", "海盐焦糖", "风味拿铁", "甜咸平衡，适合下午茶场景。", "¥9元", "300mL", 41, "online", "#d97706", "caramel")
+      demo("coffee-01", "task-coffee", "小黄油拿铁", "JUST LATTE", "黄油拿铁", "冷萃拿铁 100% 深烘豆，奶香顺滑。", "¥5元", "400mL", 8, "online", "#f5b84b", "butter", "assets/posters/poster-05.jpg"),
+      demo("coffee-02", "task-coffee", "一只小羊冷萃拿铁", "LAMBY CAFF", "冷萃拿铁", "经典冷萃，灵感咖啡。", "¥5元", "250mL", 8, "online", "#c8a27a", "latte", "assets/posters/poster-06.jpg"),
+      demo("coffee-03", "task-coffee", "厚乳冰拿铁", "厚乳研究所", "厚乳咖啡", "奶感更强，入口顺滑不苦。", "¥8元", "300mL", 18, "online", "#b08968", "milk", "assets/posters/poster-07.jpg"),
+      demo("coffee-04", "task-coffee", "黑咖啡醒神瓶", "醒醒咖啡", "无糖黑咖", "0 糖 0 脂，早八通勤刚需。", "¥6元", "330mL", 22, "online", "#3f2f2a", "black", "assets/posters/poster-08.jpg"),
+      demo("coffee-05", "task-coffee", "椰椰生咖拿铁", "椰咖", "椰乳拿铁", "椰香和咖啡香融合，清爽轻负担。", "¥9元", "350mL", 36, "online", "#10b981", "coconut", "assets/posters/poster-09.png"),
+      demo("coffee-06", "task-coffee", "焦糖海盐拿铁", "海盐焦糖", "风味拿铁", "甜咸平衡，适合下午茶场景。", "¥9元", "300mL", 41, "online", "#d97706", "caramel", "assets/posters/poster-10.jpg")
     ],
     sessions: [],
     answers: [],

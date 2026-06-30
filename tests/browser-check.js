@@ -32,6 +32,14 @@ const { pathToFileURL } = require("url");
 
   const taskTitles = await page.locator("#taskPage.active .task-card h2").allTextContents();
   if (taskTitles.join("|") !== "碳酸饮料|咖啡") throw new Error(`unexpected task titles ${taskTitles.join("|")}`);
+  const taskCoverCount = await page.locator("#taskPage.active .task-cover-image").count();
+  if (taskCoverCount !== 2) throw new Error(`expected 2 task cover images, got ${taskCoverCount}`);
+  const taskCoverSources = await page.locator("#taskPage.active .task-cover-image").evaluateAll((images) => images.map((img) => img.getAttribute("src")));
+  if (!taskCoverSources.every((src) => /^assets\/posters\/poster-\d{2}\.(jpg|png)$/.test(src || ""))) {
+    throw new Error(`task cover images should come from assets/posters, got ${taskCoverSources.join("|")}`);
+  }
+  const taskCoversLoaded = await page.locator("#taskPage.active .task-cover-image").evaluateAll((images) => images.every((img) => img.complete && img.naturalWidth > 0 && img.naturalHeight > 0));
+  if (!taskCoversLoaded) throw new Error("task cover images should load successfully");
   const taskProgressTexts = await page.locator("#taskPage.active .task-progress-text").allTextContents();
   if (taskProgressTexts.join("|") !== "已答题 0 / 未答题 10|已答题 0 / 未答题 10") {
     throw new Error(`task progress should use ten-card task quota, got ${taskProgressTexts.join("|")}`);

@@ -55,6 +55,14 @@ test("each concept card has a six-option choice question and a required feedback
   assert(/^assets\/posters\/poster-\d{2}\.(jpg|png)$/.test(step.demo.poster));
 });
 
+test("coffee task cards include poster assets for thumbnail navigation", () => {
+  const state = createSurveyState();
+  const demos = getAvailableDemos(state, "user-demo", "task-coffee", () => 0.5);
+
+  assert(demos.length > 0);
+  assert(demos.every((demo) => /^assets\/posters\/poster-\d{2}\.(jpg|png)$/.test(demo.poster)));
+});
+
 test("submits choice first, then requires text feedback before advancing to next card", () => {
   const state = createSurveyState();
   const session = startTaskSession(state, "user-demo", "task-soda", sequence([0.24, 0.5, 0.5]));
