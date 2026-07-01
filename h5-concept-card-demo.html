@@ -291,7 +291,6 @@
     }
     .history-sample-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
     .history-sample-main { min-width: 0; }
-    .history-sample-eyebrow { margin: 0 0 5px; color: #8a8f99; font-size: 12px; font-weight: 800; }
     .history-sample-card strong { margin-bottom: 7px; font-size: 18px; line-height: 1.25; }
     .tag { border-radius: 999px; background: #f1f5f9; color: #64748b; padding: 4px 8px; font-size: 12px; font-weight: 700; }
 
@@ -612,9 +611,8 @@
       if (!history.some((item) => item.answered > 0)) {
         els.historyList.innerHTML = `
           <article class="history-item history-sample-card">
-            <div class="history-sample-cover"><img src="assets/posters/poster-03.jpg" alt="养生茶示例图"></div>
+            <div class="history-sample-cover"><img src="assets/posters/poster-03.jpg" alt="养生茶"></div>
             <div class="history-sample-main">
-              <p class="history-sample-eyebrow">示例任务卡</p>
               <strong>养生茶</strong>
               <div class="history-meta">
                 <span class="tag">已答 8/10</span>

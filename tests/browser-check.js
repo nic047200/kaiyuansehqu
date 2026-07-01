@@ -55,9 +55,10 @@ const { pathToFileURL } = require("url");
   await page.locator('[data-tab="submitted"]').click();
   await page.waitForSelector('#submittedPage.active .history-sample-card');
   const sampleText = await page.locator('#submittedPage.active .history-sample-card').textContent();
-  for (const text of ["养生茶", "示例", "已答 8/10", "成长值 待发放"]) {
+  for (const text of ["养生茶", "已答 8/10", "成长值 待发放"]) {
     if (!sampleText.includes(text)) throw new Error(`sample submitted card missing ${text}`);
   }
+  if (sampleText.includes("示例")) throw new Error(`submitted card should not expose design wording: ${sampleText}`);
   await page.locator('[data-tab="tasks"]').click();
   await page.waitForSelector('#taskPage.active .task-card');
 
