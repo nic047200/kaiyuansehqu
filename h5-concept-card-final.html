@@ -1,0 +1,1223 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>口味测试</title>
+  <style>
+    :root {
+      --bg: #f6f6f6;
+      --card: #ffffff;
+      --ink: #222833;
+      --muted: #8a8f99;
+      --line: #eceff3;
+      --green: #8bd827;
+      --orange: #f47a22;
+      --orange-dark: #df6417;
+      --soft-orange: #fff2e5;
+      --shadow: 0 12px 32px rgba(33, 37, 44, .08);
+      --radius: 18px;
+      --radius-sm: 12px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { margin: 0; background: #e9e9e9; color: var(--ink); overflow: hidden; }
+    button, textarea { font: inherit; }
+    button { border: 0; cursor: pointer; }
+
+    .app {
+      width: min(100%, 430px);
+      height: 100vh;
+      margin: 0 auto;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .statusbar { flex: 0 0 36px; background: #fff; }
+    .screen { flex: 1 1 auto; min-height: 0; display: none; flex-direction: column; overflow: hidden; }
+    .screen.active { display: flex; }
+
+    .app-head {
+      flex: 0 0 64px;
+      padding: 14px 20px 0;
+      background: #fff;
+      display: grid;
+      grid-template-columns: 42px 1fr 112px;
+      align-items: start;
+      gap: 8px;
+    }
+
+    .back-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      background: transparent;
+      color: #111827;
+      font-size: 34px;
+      line-height: 26px;
+      text-align: left;
+    }
+
+    .app-title {
+      margin: 0;
+      text-align: center;
+      font-size: 21px;
+      line-height: 34px;
+      font-weight: 650;
+      letter-spacing: 0;
+    }
+
+    .mini-actions {
+      height: 34px;
+      border: 1px solid #edf0f3;
+      border-radius: 999px;
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      align-items: center;
+      background: #fff;
+      color: #171b22;
+      box-shadow: 0 2px 10px rgba(0,0,0,.03);
+    }
+
+    .mini-actions .dots { display: flex; align-items: center; justify-content: center; gap: 3px; }
+    .mini-actions .dots b { width: 4px; height: 4px; border-radius: 50%; background: #171b22; }
+    .mini-actions .ring { display: block; width: 16px; height: 16px; margin: 0 auto; border-radius: 50%; border: 2px solid #171b22; }
+    .mini-actions i { width: 1px; height: 18px; background: #edf0f3; }
+
+    .home-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; padding: 12px 14px; }
+    .home-body::-webkit-scrollbar { display: none; }
+    .home-page { display: none; }
+    .home-page.active { display: block; }
+
+    .bottom-nav {
+      flex: 0 0 60px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #fff;
+      border-top: 1px solid #edf0f3;
+    }
+
+    .bottom-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      background: transparent;
+      color: #9aa0aa;
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .bottom-tab.active { color: var(--green); }
+
+    .tab-icon { position: relative; width: 20px; height: 20px; color: inherit; }
+    .icon-tasks::before {
+      content: ""; position: absolute; left: 3px; right: 3px; top: 1px; bottom: 1px;
+      border: 2px solid currentColor; border-radius: 5px;
+    }
+    .icon-tasks::after {
+      content: ""; position: absolute; left: 6px; right: 6px; top: 7px; height: 2px;
+      background: currentColor; box-shadow: 0 5px 0 currentColor;
+    }
+    .icon-me::before {
+      content: ""; position: absolute; left: 7px; top: 1px; width: 6px; height: 6px;
+      border-radius: 50%; background: currentColor;
+    }
+    .icon-me::after {
+      content: ""; position: absolute; left: 2px; right: 2px; bottom: 1px; height: 9px;
+      border: 2px solid currentColor; border-bottom: 0; border-radius: 8px 8px 0 0;
+    }
+
+    .profile-card {
+      display: grid;
+      grid-template-columns: 58px 1fr 1fr 1fr;
+      align-items: center;
+      gap: 0;
+      min-height: 92px;
+      padding: 16px 10px;
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      margin: 0 auto;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: linear-gradient(135deg, #ff9b37, #ff6d1b);
+      font-weight: 900;
+    }
+
+    .profile-stat {
+      min-width: 0;
+      text-align: center;
+      padding: 0 8px;
+      border-left: 1px solid #eff1f4;
+    }
+
+    .profile-stat span {
+      display: block;
+      color: #9aa0aa;
+      font-size: 13px;
+      margin-bottom: 9px;
+    }
+
+    .profile-stat b {
+      display: block;
+      color: var(--green);
+      font-size: 18px;
+      line-height: 1.2;
+      font-weight: 900;
+    }
+
+    .rule-entry {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin: 18px 4px 20px;
+      background: transparent;
+      color: #8a8f99;
+      font-size: 14px;
+      padding: 0;
+    }
+
+    .rule-entry::before {
+      content: "?";
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #aeb4bd;
+      color: #8a8f99;
+      font-size: 12px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 14px;
+      font-size: 21px;
+      font-weight: 900;
+    }
+
+    #submittedPage .section-title { margin-top: 28px; }
+
+    .section-title::before {
+      content: "";
+      width: 5px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--green);
+    }
+
+    .task-list { border-radius: var(--radius); overflow: hidden; background: #fff; box-shadow: var(--shadow); }
+    .task-card {
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr) 28px;
+      align-items: center;
+      gap: 12px;
+      min-height: 104px;
+      padding: 12px 14px;
+      background: #fff;
+    }
+    .task-card + .task-card { border-top: 1px solid #edf0f3; }
+
+    .task-cover {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border-radius: var(--radius-sm);
+      background: color-mix(in srgb, var(--accent, #8bd827) 20%, #fff);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .58);
+    }
+    .task-cover-bg {
+      position: absolute;
+      inset: -16%;
+      width: 132%;
+      height: 132%;
+      object-fit: cover;
+      filter: blur(16px) saturate(1.16) brightness(.96);
+      transform: scale(1.08);
+    }
+    .task-cover-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+    .task-reward { display: inline-flex; align-items: baseline; gap: 3px; margin-top: 7px; color: #5f6672; font-size: 12px; }
+    .task-reward b { color: #7fd323; font-size: 16px; font-weight: 900; }
+    .task-main { min-width: 0; }
+    .task-main h2 { margin: 0 0 6px; font-size: 20px; line-height: 1.25; }
+    .task-progress-text { color: #8a8f99; font-size: 13px; white-space: nowrap; }
+    .task-action { justify-self: end; color: #b4bbc5; font-size: 24px; background: transparent; }
+    .task-action::after { content: ">"; }
+    .task-action span { display: none; }
+
+    .empty-page { padding: 36px 12px; color: #8a8f99; text-align: center; }
+    .history-item { padding: 14px; border-radius: var(--radius); background: #fff; box-shadow: var(--shadow); }
+    .history-item + .history-item { margin-top: 10px; }
+    .history-item strong { display: block; margin-bottom: 8px; }
+    .history-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+    .history-sample-card {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid #edf0f3;
+    }
+    .history-sample-cover {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border-radius: var(--radius-sm);
+      background: #edf8e8;
+    }
+    .history-sample-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+    .history-sample-main { min-width: 0; }
+    .history-sample-card strong { margin-bottom: 7px; font-size: 18px; line-height: 1.25; }
+    .tag { border-radius: 999px; background: #f1f5f9; color: #64748b; padding: 4px 8px; font-size: 12px; font-weight: 700; }
+
+    .survey-screen { background: linear-gradient(180deg, #ff9f42 0%, #fff4eb 42%, #fffaf7 100%); overflow-y: auto; scrollbar-width: none; }
+    .survey-screen::-webkit-scrollbar { display: none; }
+    .survey-head {
+      flex: 0 0 auto;
+      padding: 22px 18px 22px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 85% 22%, rgba(255,255,255,.28) 0 11%, transparent 12%),
+        linear-gradient(180deg, #f89c3b 0%, #f27524 100%);
+    }
+
+    .survey-topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .survey-topbar .back-btn { color: #fff; }
+    .survey-title { font-size: 15px; font-weight: 760; }
+    .survey-headline { margin: 0; font-size: 24px; line-height: 1.18; letter-spacing: 0; text-align: center; font-weight: 950; text-shadow: 0 3px 12px rgba(126, 55, 13, .22); }
+    .survey-pill {
+      display: flex;
+      width: max-content;
+      align-items: center;
+      justify-content: center;
+      margin: 14px auto 0;
+      padding: 9px 18px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .24);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.2), 0 10px 22px rgba(144, 62, 10, .18);
+    }
+
+    .answer-nav {
+      margin-top: 14px;
+      padding: 10px 10px 12px;
+      border-radius: 14px;
+      background: rgba(132, 58, 16, .2);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.16);
+    }
+    .survey-meta { margin-bottom: 9px; color: #fff; font-size: 13px; font-weight: 850; text-align: center; }
+    .thumbs { display: flex; justify-content: flex-start; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 4px 2px 3px; scroll-behavior: smooth; }
+    .thumbs::-webkit-scrollbar { display: none; }
+    .answer-thumb {
+      flex: 0 0 46px;
+      height: 46px;
+      border-radius: 10px;
+      border: 2px solid rgba(255,255,255,.58);
+      background: var(--thumb-color, #fff);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      position: relative;
+      color: #fff;
+      font-weight: 900;
+      box-shadow: 0 10px 18px rgba(126,55,13,.2);
+      opacity: .78;
+      transform: scale(.94);
+      transform-origin: center;
+      transition: transform .28s cubic-bezier(.2,.8,.2,1), opacity .28s ease, border-color .28s ease;
+    }
+    .answer-thumb .thumb-bg { position: absolute; inset: -18%; width: 136%; height: 136%; object-fit: cover; filter: blur(8px) saturate(1.15); transform: scale(1.08); }
+    .answer-thumb .thumb-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+    .answer-thumb span { position: absolute; right: 3px; bottom: 3px; min-width: 16px; height: 16px; border-radius: 999px; display: grid; place-items: center; background: rgba(17, 24, 39, .72); color: #fff; font-size: 10px; box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+    .answer-thumb.current { opacity: 1; border-color: #fff; outline: 2px solid rgba(255,255,255,.62); transform: scale(1.08); z-index: 1; }
+    .answer-thumb.done { opacity: .48; }
+
+    .concept-wrap { flex: 0 0 auto; padding: 10px 14px 16px; transition: opacity .26s ease, transform .26s ease; }
+    .concept-wrap.switching { opacity: 0; transform: translateY(12px); }
+    .concept-wrap.settled { opacity: 1; transform: translateY(0); }
+    .concept-shell {
+      border-radius: var(--radius);
+      padding: 10px;
+      background: #fff;
+      border: 1px solid rgba(223, 123, 42, .18);
+      box-shadow: 0 18px 44px rgba(147, 71, 26, .16);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .poster { border-radius: var(--radius-sm); overflow: hidden; background: #fff; }
+    .poster-banner { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: color-mix(in srgb, var(--accent) 20%, #fff); }
+    .poster-bg {
+      position: absolute; inset: -10%; width: 120%; height: 120%;
+      object-fit: cover; filter: blur(22px) saturate(1.15) brightness(.94); transform: scale(1.1);
+    }
+    .poster-image { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: contain; }
+    .poster-art {
+      position: absolute; inset: 0;
+      padding: 8px 10px;
+      background:
+        radial-gradient(circle at 50% 72%, rgba(255,255,255,.9) 0 13%, transparent 14%),
+        linear-gradient(180deg, color-mix(in srgb, var(--accent) 16%, #fff), color-mix(in srgb, var(--accent) 36%, #fff) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .poster-art h2 { margin: 0 0 10px; color: color-mix(in srgb, var(--accent) 66%, #2b1d16); font-size: 18px; line-height: 1.15; text-align: center; }
+    .poster-product {
+      width: 76px;
+      height: 96px;
+      margin: 0 auto;
+      border-radius: 14px 14px 8px 8px;
+      background: linear-gradient(180deg, #fff, color-mix(in srgb, var(--accent) 58%, #fff));
+      border: 2px solid rgba(255,255,255,.88);
+      box-shadow: 0 10px 18px rgba(30, 41, 59, .18);
+      position: relative;
+    }
+    .poster-product::before { content: ""; position: absolute; top: -10px; left: 16px; width: 22px; height: 12px; border-radius: 6px 6px 3px 3px; background: color-mix(in srgb, var(--accent) 72%, #fff); }
+    .poster-product b { position: absolute; left: 5px; right: 5px; top: 26px; text-align: center; font-size: 9px; line-height: 1.1; }
+    .poster-info { padding: 8px 4px 0; text-align: center; }
+    .price { display: flex; align-items: baseline; justify-content: center; gap: 6px; font-weight: 900; }
+    .price b { color: var(--orange); font-size: 19px; }
+    .price span { color: #111827; font-size: 14px; }
+    .poster-info p { margin: 4px 0 0; color: #6b7280; font-size: 12px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    .question-box { padding: 10px 2px 0; text-align: center; }
+    .question-block { padding: 0 0 8px; }
+    .question-block + .question-block { padding-top: 6px; border-top: 1px solid #f0e5dd; }
+    .question-title { margin: 0 0 8px; font-size: 13px; line-height: 1.3; font-weight: 700; text-align: left; }
+    .options { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; }
+    .option { min-width: 0; padding: 4px 1px 1px; border-radius: 8px; background: transparent; color: #6b7280; transition: background .15s ease; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+    .option::before {
+      content: "👍"; display: block; width: 24px; height: 24px; margin: 0 auto 4px;
+      font-size: 15px; line-height: 24px; text-align: center;
+      border-radius: 50%; background: #eef0f3;
+      filter: grayscale(1) opacity(.55);
+      transition: filter .15s ease, background .15s ease;
+    }
+    .option.selected { background: var(--soft-orange); }
+    .option.selected::before { background: var(--soft-orange); filter: none; }
+    .option span { display: block; font-size: 8.5px; line-height: 1.15; }
+    .feedback-input { width: 100%; min-height: 40px; resize: none; border: 1px solid #edf0f3; border-radius: var(--radius-sm); padding: 8px; font-size: 12px; color: var(--ink); background: #fafafa; outline: none; line-height: 1.4; }
+    .submit-answer { width: 100%; height: 34px; margin-top: 8px; border-radius: 999px; color: #fff; background: var(--orange); font-size: 14px; font-weight: 900; }
+    .submit-answer:disabled { opacity: .45; cursor: not-allowed; }
+
+    .done-panel { margin: 18px; border-radius: var(--radius); padding: 24px 18px; background: #fff; text-align: center; box-shadow: var(--shadow); }
+    .done-panel h2 { margin: 0 0 8px; font-size: 22px; }
+    .done-panel p { color: #6b7280; line-height: 1.6; }
+    .done-actions { display: grid; gap: 10px; margin-top: 18px; }
+    .primary, .secondary { height: 42px; border-radius: 999px; font-weight: 900; }
+    .primary { color: #fff; background: var(--orange); }
+    .secondary { color: #374151; background: #eef2f7; }
+
+    .modal { position: fixed; inset: 0; display: none; place-items: end center; background: rgba(17,24,39,.38); z-index: 20; }
+    .modal.open { display: grid; }
+    .modal-card { width: min(100%, 430px); border-radius: 16px 16px 0 0; padding: 20px 18px 24px; background: #fff; }
+    .modal-card h2 { margin: 0 0 12px; font-size: 20px; }
+    .modal-card p { margin: 10px 0; color: #596170; line-height: 1.6; }
+    .modal-card .primary { width: 100%; margin-top: 12px; }
+    .toast { position: fixed; left: 50%; top: 52px; transform: translateX(-50%) translateY(-14px); width: min(360px, calc(100vw - 36px)); padding: 12px 14px; border-radius: 999px; color: #fff; background: rgba(17, 24, 39, .92); text-align: center; opacity: 0; pointer-events: none; transition: .2s ease; z-index: 30; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 360px) {
+      .app-head { grid-template-columns: 36px 1fr 98px; }
+      .app-title { font-size: 19px; }
+      .task-main h2 { font-size: 18px; }
+      .survey-headline { font-size: 22px; }
+      .poster-art h2 { font-size: 27px; }
+      .option span { font-size: 9px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="statusbar"></div>
+
+    <section id="homeScreen" class="screen active">
+      <header class="app-head">
+        <button class="back-btn" aria-label="返回">‹</button>
+        <h1 class="app-title">口味测试</h1>
+        <div class="mini-actions"><span class="dots"><b></b><b></b><b></b></span><i></i><span class="ring"></span></div>
+      </header>
+      <div class="home-body">
+        <div id="taskPage" class="home-page active">
+          <button id="ruleEntry" class="rule-entry">任务规则说明</button>
+          <h2 class="section-title">任务</h2>
+          <div id="taskList" class="task-list"></div>
+        </div>
+        <div id="submittedPage" class="home-page">
+          <section class="profile-card">
+            <div class="avatar" id="avatar">开</div>
+            <div class="profile-stat"><span>当前等级</span><b id="levelValue">元气玩家</b></div>
+            <div class="profile-stat"><span>成长值</span><b id="growthValue">0/0</b></div>
+            <div class="profile-stat"><span>元气树</span><b id="vitalityTree">0</b></div>
+          </section>
+          <h2 class="section-title">已提交</h2>
+          <div id="historyList"></div>
+        </div>
+      </div>
+      <nav class="bottom-nav">
+        <button class="bottom-tab active" data-tab="tasks"><span class="tab-icon icon-tasks"></span>任务</button>
+        <button class="bottom-tab" data-tab="submitted"><span class="tab-icon icon-me"></span>我的</button>
+      </nav>
+    </section>
+
+    <section id="surveyScreen" class="screen survey-screen">
+      <header class="survey-head">
+        <div class="survey-topbar">
+          <button class="back-btn" id="backHome" aria-label="返回">‹</button>
+          <div id="surveyTopTitle" class="survey-title">口味测试</div>
+        </div>
+        <h1 id="taskHeroTitle" class="survey-headline">淘宝推荐了饮料给你</h1>
+        <span class="survey-pill">全部答完，就有机会领奖哦～</span>
+        <div class="answer-nav">
+          <div id="thumbs" class="thumbs"></div>
+        </div>
+      </header>
+      <div id="conceptArea" class="concept-wrap"></div>
+    </section>
+
+    <div id="ruleModal" class="modal" aria-hidden="true">
+      <div class="modal-card">
+        <h2>任务规则说明</h2>
+        <p><b>答题规则：</b>进入任务后会从飞书配置中随机生成 1-10 张答题卡，每张卡需完成 2 道题。</p>
+        <p><b>成长值：</b>完成本次任务后记录成长值奖励，Demo 阶段仅展示状态。</p>
+        <p><b>元气树：</b>完成任务后进入人工审核，审核通过后发放。</p>
+        <button id="closeRule" class="primary">知道了</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+  </main>
+
+  <script>
+/* Inlined from survey-engine.js for standalone project transfer. */
+(function (root, factory) {
+  if (typeof module === "object" && module.exports) {
+    module.exports = factory();
+  } else {
+    root.SurveyEngine = factory();
+  }
+})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+  const TARGET_ANSWERS = 100;
+  const CURRENT_USER = {
+    id: "community-user-1024",
+    name: "开源社区用户",
+    level: "元气玩家",
+    avatar: "开",
+    growthValue: 1000,
+    growthTarget: 2000,
+    vitalityTree: 0
+  };
+
+  const PURCHASE_OPTIONS = ["绝对不会买", "可能不会买", "不好说", "可能会买", "会买", "一定会买"];
+  const TRACK_ID_FALLBACK = {
+    "碳酸饮料": "track-soda",
+    "咖啡": "track-coffee"
+  };
+  const TRACK_ACCENTS = {
+    "track-soda": "#f97316",
+    "track-coffee": "#8b5cf6"
+  };
+
+  function makeQuestions(id) {
+    return [
+      {
+        id: `${id}-q1`,
+        type: "choice",
+        text: "这款产品你买吗？",
+        options: PURCHASE_OPTIONS.map((label, index) => ({ id: `${id}-q1-opt-${index + 1}`, label }))
+      },
+      {
+        id: `${id}-q2`,
+        type: "text",
+        text: "你觉得这张海报或产品有什么可以改进的点？",
+        placeholder: "请写下具体建议，至少5个字",
+        minLength: 5
+      }
+    ];
+  }
+
+  function cardArt(accent, tone) {
+    return { accent, tone };
+  }
+
+  function normalizeTrackId(track, trackId) {
+    return trackId || TRACK_ID_FALLBACK[track] || `track-${String(track || "unknown").toLowerCase()}`;
+  }
+
+  function posterPath(name) {
+    return name ? `assets/posters/${name}` : "";
+  }
+
+  function cardFromBase(row) {
+    const trackId = normalizeTrackId(row.track, row.trackId);
+    const accent = TRACK_ACCENTS[trackId] || "#8bd827";
+    return {
+      id: row.id,
+      taskId: trackId,
+      title: row.category,
+      brand: row.track,
+      category: row.category,
+      sellingPoint: row.category,
+      price: row.price,
+      spec: row.spec,
+      answerCount: row.answerCount,
+      targetAnswers: row.targetAnswers || TARGET_ANSWERS,
+      participants: 126 + row.answerCount,
+      status: row.status === "已开启" ? "online" : "offline",
+      startsAt: row.startsAt,
+      endsAt: row.endsAt,
+      poster: posterPath(row.posterName),
+      art: cardArt(accent, trackId),
+      questions: makeQuestions(row.id)
+    };
+  }
+
+  function isCompleteBaseCard(card) {
+    return Boolean(card.id && card.taskId && card.poster && card.price && card.spec && card.category);
+  }
+
+  function isWithinWindow(card, now) {
+    const current = now || new Date();
+    const startsAt = card.startsAt ? new Date(card.startsAt) : null;
+    const endsAt = card.endsAt ? new Date(card.endsAt) : null;
+    if (startsAt && current < startsAt) return false;
+    if (endsAt && current > endsAt) return false;
+    return true;
+  }
+
+  const baseRows = [
+    { id: "202607010001", trackId: "", track: "碳酸饮料", category: "山野碳酸果汁", price: "¥6元", spec: "400mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-01.jpg" },
+    { id: "202607010002", trackId: "", track: "碳酸饮料", category: "柠檬味气泡水", price: "¥5元", spec: "500mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-02.jpg" },
+    { id: "202607010003", trackId: "", track: "碳酸饮料", category: "茶味气泡饮", price: "¥7元", spec: "450mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-03.jpg" },
+    { id: "202607010004", trackId: "", track: "碳酸饮料", category: "经典碳酸饮料", price: "¥4元", spec: "500mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-04.jpg" },
+    { id: "202607010005", trackId: "", track: "碳酸饮料", category: "葡萄味气泡饮", price: "¥8元", spec: "420mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-05.jpg" },
+    { id: "202607010006", trackId: "", track: "碳酸饮料", category: "橙味气泡水", price: "¥6元", spec: "480mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-06.jpg" },
+    { id: "202607010007", trackId: "", track: "碳酸饮料", category: "花果味气泡饮", price: "¥9元", spec: "380mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-07.jpg" },
+    { id: "202607010008", trackId: "", track: "碳酸饮料", category: "电解质气泡水", price: "¥6元", spec: "500mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-07.jpg" },
+    { id: "202607010009", trackId: "", track: "碳酸饮料", category: "热带气泡饮", price: "¥7元", spec: "450mL", answerCount: 0, targetAnswers: 100, status: "已完成", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-09.png" },
+    { id: "202607010010", trackId: "", track: "碳酸饮料", category: "茶味气泡饮", price: "¥8元", spec: "420mL", answerCount: 0, targetAnswers: 100, status: "暂停中", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-10.jpg" },
+    { id: "202607010013", trackId: "", track: "咖啡", category: "黄油拿铁", price: "¥5元", spec: "400mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-10.jpg" },
+    { id: "202607010014", trackId: "", track: "咖啡", category: "冷萃拿铁", price: "¥5元", spec: "250mL", answerCount: 0, targetAnswers: 100, status: "暂停中", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" },
+    { id: "202607010015", trackId: "", track: "咖啡", category: "厚乳咖啡", price: "¥8元", spec: "300mL", answerCount: 0, targetAnswers: 100, status: "暂停中", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" },
+    { id: "202607010016", trackId: "", track: "咖啡", category: "无糖黑咖", price: "¥6元", spec: "330mL", answerCount: 0, targetAnswers: 100, status: "暂停中", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" },
+    { id: "202607010017", trackId: "", track: "咖啡", category: "椰乳拿铁", price: "¥9元", spec: "350mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" },
+    { id: "202607010018", trackId: "", track: "咖啡", category: "风味拿铁", price: "¥9元", spec: "300mL", answerCount: 0, targetAnswers: 100, status: "暂停中", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" },
+    { id: "202607010019", trackId: "", track: "咖啡", category: "燕麦拿铁", price: "¥8元", spec: "330mL", answerCount: 0, targetAnswers: 100, status: "已完成", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" },
+    { id: "202607010020", trackId: "", track: "咖啡", category: "气泡美式", price: "¥7元", spec: "350mL", answerCount: 0, targetAnswers: 100, status: "暂停中", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" },
+    { id: "202607010021", trackId: "", track: "咖啡", category: "抹茶拿铁", price: "¥9元", spec: "300mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" },
+    { id: "202607010022", trackId: "", track: "咖啡", category: "香草拿铁", price: "¥10元", spec: "320mL", answerCount: 0, targetAnswers: 100, status: "暂停中", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" }
+  ];
+  const baseDemos = baseRows.map(cardFromBase).filter((card) => {
+    if (card.status !== "online") return false;
+    if (!isCompleteBaseCard(card)) return false;
+    if (!isWithinWindow(card)) return false;
+    return card.answerCount < card.targetAnswers;
+  });
+
+  const baseTasks = Array.from(new Map(baseDemos.map((demo) => [demo.taskId, {
+    id: demo.taskId,
+    activityId: "activity-2026-flavor",
+    title: demo.brand,
+    rewardText: "完成答题后可获得成长值，元气树奖励进入人工审核",
+    hero: `淘宝推荐了${demo.brand}给你`,
+    status: "online",
+    order: demo.taskId === "track-soda" ? 1 : 2
+  }])).values());
+
+  const seed = {
+    user: CURRENT_USER,
+    activity: {
+      id: "activity-2026-flavor",
+      title: "口味测试",
+      status: "online",
+      startsAt: "2026-06-29",
+      endsAt: "2026-07-31"
+    },
+    tasks: baseTasks,
+    demos: baseDemos,
+    sessions: [],
+    answers: [],
+    rewards: []
+  };
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function createSurveyState(overrides) {
+    return Object.assign(clone(seed), overrides || {});
+  }
+
+  function getTask(state, taskId) {
+    return state.tasks.find((task) => task.id === taskId && task.status === "online");
+  }
+
+  function questionIds(demo) {
+    return demo.questions.map((question) => question.id);
+  }
+
+  function hasAnsweredQuestion(state, userId, demoId, questionId) {
+    return state.answers.some((answer) => answer.userId === userId && answer.demoId === demoId && answer.questionId === questionId);
+  }
+
+  function isDemoCompletedByUser(state, userId, demo) {
+    return questionIds(demo).every((questionId) => hasAnsweredQuestion(state, userId, demo.id, questionId));
+  }
+
+  function completedSubmittedCount(state, demo) {
+    const users = new Set();
+    state.answers.filter((answer) => answer.demoId === demo.id).forEach((answer) => users.add(answer.userId));
+    return [...users].filter((userId) => isDemoCompletedByUser(state, userId, demo)).length;
+  }
+
+  function effectiveAnswerCount(state, demo) {
+    return demo.answerCount + completedSubmittedCount(state, demo);
+  }
+
+  function isDemoAvailable(state, userId, taskId, demo) {
+    if (!demo || demo.taskId !== taskId || demo.status !== "online") return false;
+    if (!getTask(state, taskId)) return false;
+    if (effectiveAnswerCount(state, demo) >= (demo.targetAnswers || TARGET_ANSWERS)) return false;
+    return !demo.questions.some((question) => hasAnsweredQuestion(state, userId, demo.id, question.id));
+  }
+
+  function getAvailableDemos(state, userId, taskId, rng) {
+    const random = rng || Math.random;
+    return state.demos
+      .filter((demo) => isDemoAvailable(state, userId, taskId, demo))
+      .map((demo) => ({ ...clone(demo), currentAnswers: effectiveAnswerCount(state, demo), randomKey: random() }))
+      .sort((a, b) => (a.currentAnswers - b.currentAnswers) || (a.randomKey - b.randomKey))
+      .map(({ randomKey, ...demo }) => demo);
+  }
+
+  function getActiveSession(state, userId, taskId) {
+    return state.sessions.find((session) => session.userId === userId && session.taskId === taskId && !session.completed);
+  }
+
+  function startTaskSession(state, userId, taskId, rng) {
+    const existing = getActiveSession(state, userId, taskId);
+    if (existing) return existing;
+    const random = rng || Math.random;
+    const maxCount = Math.min(10, state.demos.filter((demo) => isDemoAvailable(state, userId, taskId, demo)).length);
+    const count = maxCount;
+    const available = getAvailableDemos(state, userId, taskId, random);
+    const session = {
+      id: `${taskId}-${userId}-${Date.now()}-${state.sessions.length + 1}`,
+      userId,
+      taskId,
+      demoIds: available.slice(0, count).map((demo) => demo.id),
+      currentIndex: 0,
+      completed: count === 0,
+      createdAt: new Date().toISOString()
+    };
+    state.sessions.push(session);
+    return session;
+  }
+
+  function getSession(state, userId, sessionId) {
+    return state.sessions.find((session) => session.id === sessionId && session.userId === userId);
+  }
+
+  function getSessionDemos(state, session) {
+    return session.demoIds.map((id) => state.demos.find((demo) => demo.id === id)).filter(Boolean).map(clone);
+  }
+
+  function getCurrentStep(state, userId, sessionId) {
+    const session = getSession(state, userId, sessionId);
+    if (!session || session.completed) return null;
+    while (session.currentIndex < session.demoIds.length) {
+      const demo = state.demos.find((item) => item.id === session.demoIds[session.currentIndex]);
+      const question = demo.questions.find((item) => !hasAnsweredQuestion(state, userId, demo.id, item.id));
+      if (question) {
+        return {
+          sessionId: session.id,
+          taskId: session.taskId,
+          cardIndex: session.currentIndex,
+          cardTotal: session.demoIds.length,
+          answeredCards: session.currentIndex,
+          participantCount: demo.participants + effectiveAnswerCount(state, demo),
+          demo: clone(demo),
+          question: clone(question)
+        };
+      }
+      session.currentIndex += 1;
+    }
+    session.completed = true;
+    ensureRewardRecord(state, userId, session.taskId);
+    return null;
+  }
+
+  function getTaskProgress(state, userId, taskId) {
+    const session = getActiveSession(state, userId, taskId) || [...state.sessions].reverse().find((item) => item.userId === userId && item.taskId === taskId);
+    if (session) {
+      const demos = session.demoIds.map((id) => state.demos.find((demo) => demo.id === id)).filter(Boolean);
+      const answered = demos.filter((demo) => isDemoCompletedByUser(state, userId, demo)).length;
+      return {
+        total: demos.length,
+        answered,
+        unanswered: Math.max(0, demos.length - answered),
+        available: Math.max(0, demos.length - answered),
+        complete: demos.length > 0 && answered === demos.length
+      };
+    }
+    const available = getAvailableDemos(state, userId, taskId).length;
+    return { total: available, answered: 0, unanswered: available, available, complete: available === 0 };
+  }
+
+  function validateAnswer(question, value) {
+    if (question.type === "choice") {
+      return question.options.some((option) => option.id === value) ? "accepted" : "invalid-option";
+    }
+    if (question.type === "text") {
+      return typeof value === "string" && value.trim().length >= question.minLength ? "accepted" : "invalid-text";
+    }
+    return "invalid-question";
+  }
+
+  function submitAnswer(state, payload) {
+    const session = getSession(state, payload.userId, payload.sessionId);
+    if (!session || session.completed) return { status: "unavailable", nextStep: null };
+    const demo = state.demos.find((item) => item.id === payload.demoId && item.taskId === session.taskId);
+    if (!demo || demo.status !== "online" || !session.demoIds.includes(demo.id)) return { status: "unavailable", nextStep: getCurrentStep(state, payload.userId, session.id) };
+    const question = demo.questions.find((item) => item.id === payload.questionId);
+    if (!question) return { status: "invalid-question", nextStep: getCurrentStep(state, payload.userId, session.id) };
+    if (hasAnsweredQuestion(state, payload.userId, demo.id, question.id)) return { status: "duplicate", nextStep: getCurrentStep(state, payload.userId, session.id) };
+    const status = validateAnswer(question, payload.value);
+    if (status !== "accepted") return { status, nextStep: getCurrentStep(state, payload.userId, session.id) };
+
+    state.answers.push({
+      userId: payload.userId,
+      taskId: session.taskId,
+      sessionId: session.id,
+      demoId: demo.id,
+      questionId: question.id,
+      value: payload.value,
+      submittedAt: new Date().toISOString()
+    });
+
+    if (isDemoCompletedByUser(state, payload.userId, demo)) {
+      session.currentIndex += 1;
+    }
+
+    const nextStep = getCurrentStep(state, payload.userId, session.id);
+    return { status: "accepted", nextStep };
+  }
+
+  function ensureRewardRecord(state, userId, taskId) {
+    const progress = getTaskProgress(state, userId, taskId);
+    if (!progress.complete) return;
+    const exists = state.rewards.some((reward) => reward.userId === userId && reward.taskId === taskId);
+    if (exists) return;
+    state.rewards.push({
+      userId,
+      taskId,
+      growthStatus: "待发放",
+      vitalityStatus: "待审核",
+      syncStatus: "未同步",
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  function getHistory(state, userId) {
+    return state.tasks
+      .filter((task) => task.status === "online")
+      .map((task) => {
+        const progress = getTaskProgress(state, userId, task.id);
+        const reward = state.rewards.find((item) => item.userId === userId && item.taskId === task.id);
+        return {
+          taskId: task.id,
+          title: task.title,
+          answered: progress.answered,
+          total: progress.total,
+          unanswered: progress.unanswered,
+          growthStatus: reward?.growthStatus || "未完成",
+          vitalityStatus: reward?.vitalityStatus || "未完成"
+        };
+      });
+  }
+
+  return {
+    TARGET_ANSWERS,
+    createSurveyState,
+    getAvailableDemos,
+    startTaskSession,
+    getSessionDemos,
+    getCurrentStep,
+    getTaskProgress,
+    submitAnswer,
+    getHistory
+  };
+});
+
+</script>
+  <script>
+    const storageKey = "concept-card-demo-state-v6";
+    const submitBridgeUrl = "http://127.0.0.1:4317/submit-answer";
+    const taskCardQuota = 10;
+    const engine = window.SurveyEngine;
+    const userId = "community-user-1024";
+    const initialState = engine.createSurveyState();
+    const savedState = localStorage.getItem(storageKey);
+    let state = savedState ? JSON.parse(savedState) : initialState;
+    let currentTaskId = null;
+    let currentSessionId = null;
+    let currentStep = null;
+    let pendingChoice = "";
+    let pendingText = "";
+    let isSubmittingAnswer = false;
+
+    const els = {
+      home: document.getElementById("homeScreen"),
+      survey: document.getElementById("surveyScreen"),
+      tabs: document.querySelectorAll("[data-tab]"),
+      taskPage: document.getElementById("taskPage"),
+      submittedPage: document.getElementById("submittedPage"),
+      taskList: document.getElementById("taskList"),
+      historyList: document.getElementById("historyList"),
+      avatar: document.getElementById("avatar"),
+      levelValue: document.getElementById("levelValue"),
+      growthValue: document.getElementById("growthValue"),
+      vitalityTree: document.getElementById("vitalityTree"),
+      ruleEntry: document.getElementById("ruleEntry"),
+      ruleModal: document.getElementById("ruleModal"),
+      closeRule: document.getElementById("closeRule"),
+      backHome: document.getElementById("backHome"),
+      surveyTopTitle: document.getElementById("surveyTopTitle"),
+      taskHeroTitle: document.getElementById("taskHeroTitle"),
+      thumbs: document.getElementById("thumbs"),
+      conceptArea: document.getElementById("conceptArea"),
+      toast: document.getElementById("toast")
+    };
+
+    function save() { localStorage.setItem(storageKey, JSON.stringify(state)); }
+    function formatDateTime(value) {
+      const date = value || new Date();
+      const pad = (number) => String(number).padStart(2, "0");
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    }
+    async function writeAnswerToBase(demo, choice, feedback, choiceValue, feedbackValue) {
+      const selected = choice.options.find((option) => option.id === choiceValue);
+      const response = await fetch(submitBridgeUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conceptCardId: demo.id,
+          communityUserId: userId,
+          purchaseIntent: selected?.label || choiceValue,
+          feedback: feedbackValue,
+          submittedAt: formatDateTime(new Date())
+        })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || "base-write-failed");
+      }
+      return result;
+    }
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 1300);
+    }
+    function switchScreen(name) {
+      els.home.classList.toggle("active", name === "home");
+      els.survey.classList.toggle("active", name === "survey");
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+    function switchHomeTab(name) {
+      els.taskPage.classList.toggle("active", name === "tasks");
+      els.submittedPage.classList.toggle("active", name === "submitted");
+      els.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === name));
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+
+    function renderHome() {
+      const user = state.user;
+      els.avatar.textContent = user.avatar;
+      els.levelValue.textContent = user.level;
+      els.growthValue.textContent = `${user.growthValue}/${user.growthTarget}`;
+      els.vitalityTree.textContent = user.vitalityTree;
+      els.taskList.innerHTML = "";
+      state.tasks.filter((task) => task.status === "online").sort((a, b) => a.order - b.order).forEach((task) => {
+        const progress = engine.getTaskProgress(state, userId, task.id);
+        const coverDemo = state.demos.find((demo) => demo.taskId === task.id && demo.poster);
+        const card = document.createElement("article");
+        card.className = "task-card";
+        card.innerHTML = `
+          <div class="task-cover" style="--accent:${coverDemo?.art?.accent || "#8bd827"}">
+            <img class="task-cover-bg" src="${coverDemo?.poster || "assets/posters/poster-01.jpg"}" alt="" aria-hidden="true">
+            <img class="task-cover-image" src="${coverDemo?.poster || "assets/posters/poster-01.jpg"}" alt="${task.title}示意图">
+          </div>
+          <div class="task-main">
+            <h2>${task.title}</h2>
+            <div class="task-progress-text">已答题 ${progress.answered} / 未答题 ${progress.unanswered}</div>
+            <div class="task-reward"><b>+20</b><span>成长值</span></div>
+          </div>
+          <button class="task-action" data-task="${task.id}" aria-label="答题"><span>答题</span></button>
+        `;
+        els.taskList.appendChild(card);
+      });
+      els.taskList.querySelectorAll("[data-task]").forEach((button) => button.addEventListener("click", () => startTask(button.dataset.task)));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const history = engine.getHistory(state, userId);
+      if (!history.some((item) => item.answered > 0)) {
+        els.historyList.innerHTML = `
+          <article class="history-item history-sample-card">
+            <div class="history-sample-cover"><img src="assets/posters/poster-03.jpg" alt="养生茶"></div>
+            <div class="history-sample-main">
+              <strong>养生茶</strong>
+              <div class="history-meta">
+                <span class="tag">已答 8/10</span>
+                <span class="tag">成长值 待发放</span>
+                <span class="tag">元气树 待审核</span>
+              </div>
+            </div>
+          </article>
+        `;
+        return;
+      }
+      els.historyList.innerHTML = history.filter((item) => item.answered > 0).map((item) => `
+        <article class="history-item">
+          <strong>${item.title}</strong>
+          <div class="history-meta">
+            <span class="tag">已答 ${item.answered}/${item.total}</span>
+            <span class="tag">成长值 ${item.growthStatus}</span>
+            <span class="tag">元气树 ${item.vitalityStatus}</span>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function startTask(taskId) {
+      currentTaskId = taskId;
+      const task = state.tasks.find((item) => item.id === taskId);
+      const session = engine.startTaskSession(state, userId, taskId);
+      currentSessionId = session.id;
+      els.surveyTopTitle.textContent = task.title;
+      els.taskHeroTitle.textContent = task.hero;
+      switchScreen("survey");
+      save();
+      showCurrentStep();
+    }
+
+    function showCurrentStep() {
+      currentStep = engine.getCurrentStep(state, userId, currentSessionId);
+      pendingChoice = "";
+      pendingText = "";
+      isSubmittingAnswer = false;
+      renderThumbs();
+      if (!currentStep) {
+        renderDone();
+        save();
+        return;
+      }
+      renderConcept(currentStep);
+      save();
+    }
+
+    function renderThumbs() {
+      const session = state.sessions.find((item) => item.id === currentSessionId);
+      const demos = session ? engine.getSessionDemos(state, session) : [];
+      const currentIndex = currentStep ? currentStep.cardIndex : demos.length;
+      els.thumbs.innerHTML = demos.map((demo, index) => {
+        const done = demo.questions.every((question) => state.answers.some((answer) => answer.userId === userId && answer.demoId === demo.id && answer.questionId === question.id));
+        const thumb = demo.poster ? `<img class="thumb-bg" src="${demo.poster}" alt="" aria-hidden="true"><img class="thumb-image" src="${demo.poster}" alt="${demo.title}缩略图"><span>${index + 1}</span>` : `<span>${index + 1}</span>`;
+        return `<div class="answer-thumb ${index === currentIndex ? "current" : ""} ${done ? "done" : ""}" style="--thumb-color:${demo.art.accent}">${thumb}</div>`;
+      }).join("");
+
+    }
+
+    function renderConcept(step) {
+      const demo = step.demo;
+      const choice = demo.questions.find((question) => question.type === "choice");
+      const feedback = demo.questions.find((question) => question.type === "text");
+      els.conceptArea.classList.add("switching");
+      window.setTimeout(() => {
+        els.conceptArea.innerHTML = `
+          <div class="concept-shell">
+            <div class="poster" style="--accent:${demo.art.accent}">
+              <div class="poster-banner">
+                ${demo.poster
+                  ? `<img class="poster-bg" src="${demo.poster}" alt="" aria-hidden="true"><img class="poster-image" src="${demo.poster}" alt="${demo.title}">`
+                  : `<div class="poster-art"><h2>${demo.title}</h2><div class="poster-product"><b>${demo.brand}</b></div></div>`}
+              </div>
+              <div class="poster-info">
+                <div class="price"><b>${demo.price}</b><span>${demo.spec}</span></div>
+                <p>${demo.category}</p>
+              </div>
+            </div>
+            <div class="question-box">
+              <div class="question-block">
+                <h3 class="question-title">1. ${choice.text}</h3>
+                <div class="options">${choice.options.map((option) => `<button class="option" data-value="${option.id}"><span>${option.label}</span></button>`).join("")}</div>
+              </div>
+              <div class="question-block feedback-block">
+                <h3 class="question-title">2. ${feedback.text}</h3>
+                <textarea class="feedback-input" placeholder="${feedback.placeholder}" maxlength="120"></textarea>
+              </div>
+              <button id="submitAnswer" class="submit-answer" disabled>提交</button>
+            </div>
+          </div>
+        `;
+        const submit = document.getElementById("submitAnswer");
+        const textarea = els.conceptArea.querySelector("textarea");
+        const validate = () => {
+          pendingText = textarea.value;
+          submit.disabled = !pendingChoice || pendingText.trim().length < feedback.minLength;
+        };
+        els.conceptArea.querySelectorAll(".option").forEach((button) => {
+          button.addEventListener("click", () => {
+            els.conceptArea.querySelectorAll(".option").forEach((item) => item.classList.remove("selected"));
+            button.classList.add("selected");
+            pendingChoice = button.dataset.value;
+            validate();
+          });
+        });
+        textarea.addEventListener("input", validate);
+        submit.addEventListener("click", () => submitCurrentAnswer(choice, feedback));
+        els.conceptArea.classList.remove("switching");
+        els.conceptArea.classList.add("settled");
+      }, 90);
+    }
+
+    async function submitCurrentAnswer(choice, feedback) {
+      if (isSubmittingAnswer || !currentStep || !pendingChoice || pendingText.trim().length < feedback.minLength) return;
+      isSubmittingAnswer = true;
+      const submit = document.getElementById("submitAnswer");
+      if (submit) {
+        submit.disabled = true;
+        submit.textContent = "提交中";
+      }
+      const answerStart = state.answers.length;
+      const first = engine.submitAnswer(state, {
+        userId,
+        sessionId: currentSessionId,
+        demoId: currentStep.demo.id,
+        questionId: choice.id,
+        value: pendingChoice
+      });
+      if (first.status !== "accepted") {
+        isSubmittingAnswer = false;
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = "提交";
+        }
+        showToast(statusText(first.status));
+        return;
+      }
+      const second = engine.submitAnswer(state, {
+        userId,
+        sessionId: currentSessionId,
+        demoId: currentStep.demo.id,
+        questionId: feedback.id,
+        value: pendingText
+      });
+      if (second.status !== "accepted") {
+        state.answers.splice(answerStart);
+        isSubmittingAnswer = false;
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = "提交";
+        }
+        showToast(statusText(second.status));
+        return;
+      }
+      try {
+        await writeAnswerToBase(currentStep.demo, choice, feedback, pendingChoice, pendingText);
+      } catch (error) {
+        state.answers.splice(answerStart);
+        isSubmittingAnswer = false;
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = "提交";
+        }
+        save();
+        showToast("多维表写入失败，请确认本地服务已启动");
+        return;
+      }
+      save();
+      els.conceptArea.classList.add("switching");
+      window.setTimeout(showCurrentStep, 180);
+    }
+
+    function statusText(status) {
+      return {
+        duplicate: "这道题已提交，不能修改",
+        full: "这张已收满 100 份",
+        unavailable: "当前任务不可答",
+        "invalid-text": "请写下至少 5 个字的建议",
+        "invalid-option": "请选择一个答案"
+      }[status] || "提交失败，请重试";
+    }
+
+    function renderDone() {
+      const currentIndex = state.tasks.findIndex((task) => task.id === currentTaskId);
+      const nextTask = state.tasks.slice(currentIndex + 1).find((task) => task.status === "online" && engine.getTaskProgress(state, userId, task.id).unanswered > 0);
+      const history = engine.getHistory(state, userId).find((item) => item.taskId === currentTaskId);
+      els.conceptArea.innerHTML = `
+        <div class="done-panel">
+          <h2>本任务答题结束</h2>
+          <p>当前任务已答 ${history.answered}/${history.total}。成长值和元气树奖励状态可在已提交中查看。</p>
+          <div class="done-actions">
+            ${nextTask ? `<button class="primary" id="nextTask">进入下一个任务</button>` : ""}
+            <button class="secondary" id="homeAgain">返回已提交</button>
+          </div>
+        </div>
+      `;
+      const nextButton = document.getElementById("nextTask");
+      if (nextButton) nextButton.addEventListener("click", () => startTask(nextTask.id));
+      document.getElementById("homeAgain").addEventListener("click", () => {
+        renderHome();
+        switchScreen("home");
+        switchHomeTab("submitted");
+      });
+    }
+
+    els.tabs.forEach((tab) => tab.addEventListener("click", () => switchHomeTab(tab.dataset.tab)));
+    els.ruleEntry.addEventListener("click", () => els.ruleModal.classList.add("open"));
+    els.closeRule.addEventListener("click", () => els.ruleModal.classList.remove("open"));
+    els.ruleModal.addEventListener("click", (event) => { if (event.target === els.ruleModal) els.ruleModal.classList.remove("open"); });
+    els.backHome.addEventListener("click", () => { renderHome(); switchScreen("home"); });
+
+    renderHome();
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
