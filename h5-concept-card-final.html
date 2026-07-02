@@ -260,7 +260,7 @@
       display: block;
       object-fit: contain;
     }
-    .task-reward { display: inline-flex; align-items: baseline; gap: 3px; margin-top: 7px; color: #5f6672; font-size: 12px; }
+    .task-reward { display: inline-flex; align-items: baseline; gap: 3px; margin-top: 7px; color: #5f6672; font-size: 12px; white-space: nowrap; }
     .task-reward b { color: #7fd323; font-size: 16px; font-weight: 900; }
     .task-main { min-width: 0; }
     .task-main h2 { margin: 0 0 6px; font-size: 20px; line-height: 1.25; }
@@ -270,29 +270,14 @@
     .task-action span { display: none; }
 
     .empty-page { padding: 36px 12px; color: #8a8f99; text-align: center; }
-    .history-item { padding: 14px; border-radius: var(--radius); background: #fff; box-shadow: var(--shadow); }
+    .history-item { display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: center; gap: 12px; min-height: 104px; padding: 12px 14px; border-radius: var(--radius); background: #fff; box-shadow: var(--shadow); }
     .history-item + .history-item { margin-top: 10px; }
-    .history-item strong { display: block; margin-bottom: 8px; }
-    .history-meta { display: flex; flex-wrap: wrap; gap: 8px; }
-    .history-sample-card {
-      display: grid;
-      grid-template-columns: 92px minmax(0, 1fr);
-      gap: 12px;
-      align-items: center;
-      padding: 12px;
-      border: 1px solid #edf0f3;
-    }
-    .history-sample-cover {
-      position: relative;
-      aspect-ratio: 16 / 9;
-      overflow: hidden;
-      border-radius: var(--radius-sm);
-      background: #edf8e8;
-    }
-    .history-sample-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
-    .history-sample-main { min-width: 0; }
-    .history-sample-card strong { margin-bottom: 7px; font-size: 18px; line-height: 1.25; }
+    .history-main { min-width: 0; }
+    .history-main strong { display: block; margin: 0 0 8px; font-size: 20px; line-height: 1.25; }
+    .history-meta { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; }
+    .history-reward-row { display: flex; flex-wrap: wrap; gap: 8px; }
     .tag { border-radius: 999px; background: #f1f5f9; color: #64748b; padding: 4px 8px; font-size: 12px; font-weight: 700; }
+    .history-empty { padding: 28px 12px; color: #8a8f99; text-align: center; font-size: 14px; }
 
     .survey-screen { background: linear-gradient(180deg, #ff9f42 0%, #fff4eb 42%, #fffaf7 100%); overflow-y: auto; scrollbar-width: none; }
     .survey-screen::-webkit-scrollbar { display: none; }
@@ -359,8 +344,8 @@
     .answer-thumb.done { opacity: .48; }
 
     .concept-wrap { flex: 0 0 auto; padding: 10px 14px 16px; transition: opacity .26s ease, transform .26s ease; }
-    .concept-wrap.switching { opacity: 0; transform: translateY(12px); }
-    .concept-wrap.settled { opacity: 1; transform: translateY(0); }
+    .concept-wrap.switching { opacity: 0; transform: translateX(-28px); }
+    .concept-wrap.settled { opacity: 1; transform: translateX(0); }
     .concept-shell {
       border-radius: var(--radius);
       padding: 10px;
@@ -506,10 +491,9 @@
     <div id="ruleModal" class="modal" aria-hidden="true">
       <div class="modal-card">
         <h2>任务规则说明</h2>
-        <p><b>参与方式：</b>选择一个任务，依次查看概念卡并完成答题。</p>
-        <p><b>答什么：</b>每张概念卡需要选择购买意愿，并填写至少 5 个字的改进建议。</p>
-        <p><b>展示规则：</b>系统只展示当前可调研的概念卡；已结束、暂停或信息不完整的内容不会出现。</p>
-        <p><b>奖励说明：</b>完成答题后可获得成长值；元气树奖励审核通过后由社区发放。</p>
+        <p><b>参与方式：</b>选择一个调研任务，依次查看概念卡并完成反馈。</p>
+        <p><b>填写规则：</b>每张概念卡需选择购买意愿，并填写不少于 5 个字的改进建议。</p>
+        <p><b>奖励说明：</b>完成调研后可获得成长值；元气树奖励将在审核通过后由社区发放。</p>
         <button id="closeRule" class="primary">知道了</button>
       </div>
     </div>
@@ -527,6 +511,8 @@
   }
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   const TARGET_ANSWERS = 100;
+  const GROWTH_PER_CARD = 10;
+  const VITALITY_PER_CARD = 2;
   const CURRENT_USER = {
     id: "community-user-1024",
     name: "开源社区用户",
@@ -625,9 +611,9 @@
     { id: "202607010008", trackId: "", track: "碳酸饮料", category: "电解质气泡水", price: "¥6元", spec: "500mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-07.jpg" },
     { id: "202607010009", trackId: "", track: "碳酸饮料", category: "热带气泡饮", price: "¥7元", spec: "450mL", answerCount: 0, targetAnswers: 100, status: "已完成", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-09.png" },
     { id: "202607010010", trackId: "", track: "碳酸饮料", category: "茶味气泡饮", price: "¥8元", spec: "420mL", answerCount: 0, targetAnswers: 100, status: "暂停中", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-10.jpg" },
-    { id: "202607010013", trackId: "", track: "咖啡", category: "黄油拿铁", price: "¥5元", spec: "400mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-10.jpg" },
-    { id: "202607010014", trackId: "", track: "咖啡", category: "冷萃拿铁", price: "¥5元", spec: "250mL", answerCount: 0, targetAnswers: 100, status: "暂停中", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" },
-    { id: "202607010015", trackId: "", track: "咖啡", category: "厚乳咖啡", price: "¥8元", spec: "300mL", answerCount: 0, targetAnswers: 100, status: "暂停中", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" },
+    { id: "202607010013", trackId: "", track: "咖啡", category: "黄油拿铁", price: "¥5元", spec: "400mL", answerCount: 1, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-10.jpg" },
+    { id: "202607010014", trackId: "", track: "咖啡", category: "冷萃拿铁", price: "¥5元", spec: "250mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-09.png" },
+    { id: "202607010015", trackId: "", track: "咖啡", category: "厚乳咖啡", price: "¥8元", spec: "300mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "poster-09.png" },
     { id: "202607010016", trackId: "", track: "咖啡", category: "无糖黑咖", price: "¥6元", spec: "330mL", answerCount: 0, targetAnswers: 100, status: "暂停中", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" },
     { id: "202607010017", trackId: "", track: "咖啡", category: "椰乳拿铁", price: "¥9元", spec: "350mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" },
     { id: "202607010018", trackId: "", track: "咖啡", category: "风味拿铁", price: "¥9元", spec: "300mL", answerCount: 0, targetAnswers: 100, status: "暂停中", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" },
@@ -636,22 +622,29 @@
     { id: "202607010021", trackId: "", track: "咖啡", category: "抹茶拿铁", price: "¥9元", spec: "300mL", answerCount: 0, targetAnswers: 100, status: "已开启", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" },
     { id: "202607010022", trackId: "", track: "咖啡", category: "香草拿铁", price: "¥10元", spec: "320mL", answerCount: 0, targetAnswers: 100, status: "暂停中", startsAt: "2026-06-29 00:00:00", endsAt: "2026-07-31 23:59:00", posterName: "" }
   ];
-  const baseDemos = baseRows.map(cardFromBase).filter((card) => {
-    if (card.status !== "online") return false;
-    if (!isCompleteBaseCard(card)) return false;
-    if (!isWithinWindow(card)) return false;
-    return card.answerCount < card.targetAnswers;
-  });
+  function buildDemosFromRows(rows) {
+    return rows.map(cardFromBase).filter((card) => {
+      if (card.status !== "online") return false;
+      if (!isCompleteBaseCard(card)) return false;
+      if (!isWithinWindow(card)) return false;
+      return card.answerCount < card.targetAnswers;
+    });
+  }
 
-  const baseTasks = Array.from(new Map(baseDemos.map((demo) => [demo.taskId, {
-    id: demo.taskId,
-    activityId: "activity-2026-flavor",
-    title: demo.brand,
-    rewardText: "完成答题后可获得成长值，元气树奖励进入人工审核",
-    hero: `淘宝推荐了${demo.brand}给你`,
-    status: "online",
-    order: demo.taskId === "track-soda" ? 1 : 2
-  }])).values());
+  function buildTasksFromDemos(demos) {
+    return Array.from(new Map(demos.map((demo) => [demo.taskId, {
+      id: demo.taskId,
+      activityId: "activity-2026-flavor",
+      title: demo.brand,
+      rewardText: "完成答题后可获得成长值，元气树奖励进入人工审核",
+      hero: `淘宝推荐了${demo.brand}给你`,
+      status: "online",
+      order: demo.taskId === "track-soda" ? 1 : 2
+    }])).values());
+  }
+
+  const baseDemos = buildDemosFromRows(baseRows);
+  const baseTasks = buildTasksFromDemos(baseDemos);
 
   const seed = {
     user: CURRENT_USER,
@@ -674,6 +667,14 @@
 
   function createSurveyState(overrides) {
     return Object.assign(clone(seed), overrides || {});
+  }
+
+  function createSurveyStateFromRows(rows, overrides) {
+    const demos = buildDemosFromRows(rows);
+    return createSurveyState(Object.assign({
+      tasks: buildTasksFromDemos(demos),
+      demos
+    }, overrides || {}));
   }
 
   function getTask(state, taskId) {
@@ -780,16 +781,27 @@
     if (session) {
       const demos = session.demoIds.map((id) => state.demos.find((demo) => demo.id === id)).filter(Boolean);
       const answered = demos.filter((demo) => isDemoCompletedByUser(state, userId, demo)).length;
+      const unanswered = Math.max(0, demos.length - answered);
       return {
         total: demos.length,
         answered,
-        unanswered: Math.max(0, demos.length - answered),
-        available: Math.max(0, demos.length - answered),
+        unanswered,
+        available: unanswered,
+        maxGrowth: unanswered * GROWTH_PER_CARD,
+        maxVitality: unanswered * VITALITY_PER_CARD,
         complete: demos.length > 0 && answered === demos.length
       };
     }
     const available = getAvailableDemos(state, userId, taskId).length;
-    return { total: available, answered: 0, unanswered: available, available, complete: available === 0 };
+    return {
+      total: available,
+      answered: 0,
+      unanswered: available,
+      available,
+      maxGrowth: available * GROWTH_PER_CARD,
+      maxVitality: available * VITALITY_PER_CARD,
+      complete: available === 0
+    };
   }
 
   function validateAnswer(question, value) {
@@ -841,6 +853,8 @@
       taskId,
       growthStatus: "待发放",
       vitalityStatus: "待审核",
+      growthValue: progress.answered * GROWTH_PER_CARD,
+      vitalityValue: progress.answered * VITALITY_PER_CARD,
       syncStatus: "未同步",
       createdAt: new Date().toISOString()
     });
@@ -852,14 +866,19 @@
       .map((task) => {
         const progress = getTaskProgress(state, userId, task.id);
         const reward = state.rewards.find((item) => item.userId === userId && item.taskId === task.id);
+        const coverDemo = state.demos.find((demo) => demo.taskId === task.id && demo.poster);
         return {
           taskId: task.id,
           title: task.title,
+          poster: coverDemo?.poster || "assets/posters/poster-01.jpg",
+          accent: coverDemo?.art?.accent || "#8bd827",
           answered: progress.answered,
           total: progress.total,
           unanswered: progress.unanswered,
           growthStatus: reward?.growthStatus || "未完成",
-          vitalityStatus: reward?.vitalityStatus || "未完成"
+          vitalityStatus: reward?.vitalityStatus || "未完成",
+          growthValue: reward?.growthValue || 0,
+          vitalityValue: reward?.vitalityValue || 0
         };
       });
   }
@@ -867,20 +886,25 @@
   return {
     TARGET_ANSWERS,
     createSurveyState,
+    createSurveyStateFromRows,
     getAvailableDemos,
     startTaskSession,
     getSessionDemos,
     getCurrentStep,
     getTaskProgress,
     submitAnswer,
-    getHistory
+    getHistory,
+    GROWTH_PER_CARD,
+    VITALITY_PER_CARD
   };
 });
 
 </script>
   <script>
-    const storageKey = "concept-card-demo-state-v6";
-    const submitBridgeUrl = "http://127.0.0.1:4317/submit-answer";
+    const storageKey = "concept-card-demo-state-v7";
+    const bridgeBaseUrl = "http://127.0.0.1:4317";
+    const submitBridgeUrl = `${bridgeBaseUrl}/submit-answer`;
+    const surveyDataUrl = `${bridgeBaseUrl}/survey-data`;
     const taskCardQuota = 10;
     const engine = window.SurveyEngine;
     const userId = "community-user-1024";
@@ -942,6 +966,27 @@
       }
       return result;
     }
+    function mergeRuntimeState(freshState, previousState) {
+      return Object.assign(freshState, {
+        sessions: previousState?.sessions || [],
+        answers: previousState?.answers || [],
+        rewards: previousState?.rewards || []
+      });
+    }
+
+    async function syncSurveyData() {
+      try {
+        const response = await fetch(`${surveyDataUrl}?t=${Date.now()}`);
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.ok || !Array.isArray(result.rows)) throw new Error(result.error || "sync-failed");
+        state = mergeRuntimeState(engine.createSurveyStateFromRows(result.rows), state);
+        syncSource = "base";
+        save();
+      } catch (error) {
+        syncSource = "snapshot";
+        showToast("多维表实时同步未启动，已使用本地快照");
+      }
+    }
     function showToast(message) {
       els.toast.textContent = message;
       els.toast.classList.add("show");
@@ -969,6 +1014,7 @@
       els.taskList.innerHTML = "";
       state.tasks.filter((task) => task.status === "online").sort((a, b) => a.order - b.order).forEach((task) => {
         const progress = engine.getTaskProgress(state, userId, task.id);
+        if (progress.unanswered <= 0) return;
         const coverDemo = state.demos.find((demo) => demo.taskId === task.id && demo.poster);
         const card = document.createElement("article");
         card.className = "task-card";
@@ -980,7 +1026,7 @@
           <div class="task-main">
             <h2>${task.title}</h2>
             <div class="task-progress-text">已答题 ${progress.answered} / 未答题 ${progress.unanswered}</div>
-            <div class="task-reward"><b>+20</b><span>成长值</span></div>
+            <div class="task-reward"><span>最高可获得</span><b>${progress.maxGrowth}</b><span>成长值，</span><b>${progress.maxVitality}</b><span>元气树</span></div>
           </div>
           <button class="task-action" data-task="${task.id}" aria-label="答题"><span>答题</span></button>
         `;
@@ -993,28 +1039,24 @@
     function renderHistory() {
       const history = engine.getHistory(state, userId);
       if (!history.some((item) => item.answered > 0)) {
-        els.historyList.innerHTML = `
-          <article class="history-item history-sample-card">
-            <div class="history-sample-cover"><img src="assets/posters/poster-03.jpg" alt="养生茶"></div>
-            <div class="history-sample-main">
-              <strong>养生茶</strong>
-              <div class="history-meta">
-                <span class="tag">已答 8/10</span>
-                <span class="tag">成长值 待发放</span>
-                <span class="tag">元气树 待审核</span>
-              </div>
-            </div>
-          </article>
-        `;
+        els.historyList.innerHTML = `<div class="history-empty">暂无已提交任务</div>`;
         return;
       }
       els.historyList.innerHTML = history.filter((item) => item.answered > 0).map((item) => `
         <article class="history-item">
-          <strong>${item.title}</strong>
-          <div class="history-meta">
-            <span class="tag">已答 ${item.answered}/${item.total}</span>
-            <span class="tag">成长值 ${item.growthStatus}</span>
-            <span class="tag">元气树 ${item.vitalityStatus}</span>
+          <div class="task-cover" style="--accent:${item.accent}">
+            <img class="task-cover-bg" src="${item.poster}" alt="" aria-hidden="true">
+            <img class="task-cover-image" src="${item.poster}" alt="${item.title}示意图">
+          </div>
+          <div class="history-main">
+            <strong>${item.title}</strong>
+            <div class="history-meta">
+              <span class="tag">已作答 ${item.answered} 题</span>
+              <div class="history-reward-row">
+                <span class="tag">成长值 ${item.growthStatus}</span>
+                <span class="tag">元气树 ${item.vitalityStatus}</span>
+              </div>
+            </div>
           </div>
         </article>
       `).join("");
@@ -1189,7 +1231,7 @@
       els.conceptArea.innerHTML = `
         <div class="done-panel">
           <h2>本任务答题结束</h2>
-          <p>当前任务已答 ${history.answered}/${history.total}。成长值和元气树奖励状态可在已提交中查看。</p>
+          <p>当前任务已作答 ${history.answered} 题。成长值和元气树奖励状态可在已提交中查看。</p>
           <div class="done-actions">
             ${nextTask ? `<button class="primary" id="nextTask">进入下一个任务</button>` : ""}
             <button class="secondary" id="homeAgain">返回已提交</button>
@@ -1210,8 +1252,12 @@
     els.closeRule.addEventListener("click", () => els.ruleModal.classList.remove("open"));
     els.ruleModal.addEventListener("click", (event) => { if (event.target === els.ruleModal) els.ruleModal.classList.remove("open"); });
     els.backHome.addEventListener("click", () => { renderHome(); switchScreen("home"); });
+    async function initApp() {
+      await syncSurveyData();
+      renderHome();
+    }
 
-    renderHome();
+    initApp();
   </script>
 </body>
 </html>
