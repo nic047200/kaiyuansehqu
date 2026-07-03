@@ -1,4 +1,7 @@
 const http = require("http");
+const fs = require("fs");
+const path = require("path");
+const { pathToFileURL } = require("url");
 const { execFile } = require("child_process");
 
 const PORT = Number(process.env.PORT || 4317);
@@ -6,6 +9,8 @@ const LARK_CLI = process.env.LARK_CLI || "C:\\Users\\YQSL\\.codex\\skills\\lark-
 const BASE_TOKEN = process.env.BASE_TOKEN || "FoCkbw9Q0a3z5EsUutwcjoqSnwf";
 const CARD_TABLE_ID = process.env.CARD_TABLE_ID || "tbl1s8wVI1Rf5Mu4";
 const DETAIL_TABLE_ID = process.env.DETAIL_TABLE_ID || "tbl4oHC38PsYlkp4";
+const PREVIEW_HTML_PATH = process.env.PREVIEW_HTML_PATH || path.join(__dirname, "h5-concept-card-final.html");
+const PREVIEW_BASE_URL = process.env.PREVIEW_BASE_URL || `http://127.0.0.1:${PORT}/preview`;
 
 function send(res, status, data) {
   res.writeHead(status, {
@@ -16,6 +21,28 @@ function send(res, status, data) {
     "Cache-Control": "no-store"
   });
   res.end(JSON.stringify(data));
+}
+
+function sendFile(res, contentType, content) {
+  res.writeHead(200, {
+    "Content-Type": contentType,
+    "Cache-Control": "no-store"
+  });
+  res.end(content);
+}
+
+function contentTypeFor(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  return {
+    ".html": "text/html; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".js": "application/javascript; charset=utf-8",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".svg": "image/svg+xml"
+  }[ext] || "application/octet-stream";
 }
 
 function readJson(req) {
@@ -65,10 +92,24 @@ function attachmentName(value) {
   return Array.isArray(value) && value[0] && value[0].name ? String(value[0].name) : "";
 }
 
+function attachmentValue(value) {
+  return Array.isArray(value) ? value.filter((item) => item && item.file_token) : [];
+}
+
 function numberValue(value, fallback) {
   if (value === null || value === undefined || value === "") return fallback;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function previewLinkFor(cardId) {
+  const url = new URL(PREVIEW_BASE_URL);
+  url.searchParams.set("preview", String(cardId));
+  return url.href;
+}
+
+function isPreviewReady(row) {
+  return Boolean(row.id && row.track && row.category && row.posterName && row.price && row.spec);
 }
 
 async function listConceptCards() {
@@ -90,12 +131,14 @@ async function listConceptCards() {
 
   const fieldNames = result.data.fields || [];
   const records = result.data.data || [];
-  const rows = records.map((record) => {
+  const recordIds = result.data.record_id_list || [];
+  const rows = records.map((record, recordIndex) => {
     const item = {};
     fieldNames.forEach((field, index) => {
       item[field] = record[index];
     });
     return {
+      recordId: String(recordIds[recordIndex] || ""),
       id: String(item["概念卡ID"] || ""),
       trackId: String(item["赛道ID"] || ""),
       track: String(item["赛道"] || ""),
@@ -107,11 +150,43 @@ async function listConceptCards() {
       status: firstOption(item["问卷状态"]),
       startsAt: String(item["开始时间设置"] || ""),
       endsAt: String(item["结束时间设置"] || ""),
-      posterName: attachmentName(item["海报图"])
+      posterName: attachmentName(item["海报图"]),
+      posterAttachment: attachmentValue(item["海报图"]),
+      previewLink: String(item["预览链接"] || "")
     };
   });
 
   return { ok: true, rows, total: rows.length, fetchedAt: new Date().toISOString() };
+}
+
+async function updatePreviewLinks() {
+  const list = await listConceptCards();
+  if (!list.ok) return list;
+  const readyRows = list.rows.filter((row) => row.recordId && isPreviewReady(row));
+  const updates = [];
+  for (const row of readyRows) {
+    const previewLink = previewLinkFor(row.id);
+    if (row.previewLink && row.previewLink.includes(previewLink)) {
+      updates.push({ conceptCardId: row.id, recordId: row.recordId, skipped: true, previewLink });
+      continue;
+    }
+    const result = await runLark([
+      "base",
+      "+record-batch-update",
+      "--as",
+      "user",
+      "--base-token",
+      BASE_TOKEN,
+      "--table-id",
+      CARD_TABLE_ID,
+      "--json",
+      JSON.stringify({ record_id_list: [row.recordId], patch: { "预览链接": previewLink } }),
+      "--format",
+      "json"
+    ]);
+    updates.push({ conceptCardId: row.id, recordId: row.recordId, skipped: false, previewLink, result });
+  }
+  return { ok: true, updated: updates.filter((item) => !item.skipped).length, skipped: updates.filter((item) => item.skipped).length, totalReady: readyRows.length, updates };
 }
 
 function validatePayload(payload) {
@@ -124,29 +199,35 @@ function validatePayload(payload) {
   return "";
 }
 
-function createRecord(payload) {
-  const request = {
-    fields: [
-      "概念卡ID",
-      "社区用户ID",
-      "奖励元气树数量",
-      "元气树发放状态",
-      "元气树审核状态",
-      "你觉得这张海报或产品有什么可以改进的点？",
-      "提交时间",
-      "购买意愿"
-    ],
-    rows: [[
-      payload.conceptCardId,
-      payload.communityUserId,
-      0,
-      "未发放",
-      "审核中",
-      String(payload.feedback).trim(),
-      payload.submittedAt,
-      payload.purchaseIntent
-    ]]
-  };
+async function createRecord(payload) {
+  const list = await listConceptCards();
+  const conceptCard = list.ok ? list.rows.find((row) => row.id === String(payload.conceptCardId)) : null;
+  const posterAttachment = conceptCard?.posterAttachment || [];
+  const fields = [
+    "概念卡ID",
+    "社区用户ID",
+    "奖励元气树数量",
+    "元气树发放状态",
+    "元气树审核状态",
+    "你觉得这张海报或产品有什么可以改进的点？",
+    "提交时间",
+    "购买意愿"
+  ];
+  const row = [
+    payload.conceptCardId,
+    payload.communityUserId,
+    0,
+    "未发放",
+    "审核中",
+    String(payload.feedback).trim(),
+    payload.submittedAt,
+    payload.purchaseIntent
+  ];
+  if (posterAttachment.length) {
+    fields.push("海报");
+    row.push(posterAttachment);
+  }
+  const request = { fields, rows: [row] };
 
   return runLark([
     "base",
@@ -172,8 +253,30 @@ const server = http.createServer(async (req, res) => {
   }
 
   try {
+    if (req.method === "GET" && pathname === "/preview") {
+      sendFile(res, "text/html; charset=utf-8", fs.readFileSync(PREVIEW_HTML_PATH));
+      return;
+    }
+
+    if (req.method === "GET" && pathname.startsWith("/assets/")) {
+      const assetsRoot = path.resolve(__dirname, "assets");
+      const filePath = path.resolve(__dirname, decodeURIComponent(pathname.slice(1)));
+      if (!filePath.startsWith(assetsRoot + path.sep)) {
+        send(res, 403, { ok: false, error: "forbidden" });
+        return;
+      }
+      sendFile(res, contentTypeFor(filePath), fs.readFileSync(filePath));
+      return;
+    }
+
     if (req.method === "GET" && pathname === "/survey-data") {
       const result = await listConceptCards();
+      send(res, result.ok ? 200 : 500, result);
+      return;
+    }
+
+    if (req.method === "POST" && pathname === "/preview-links") {
+      const result = await updatePreviewLinks();
       send(res, result.ok ? 200 : 500, result);
       return;
     }
@@ -204,4 +307,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, "127.0.0.1", () => {
   console.log(`Lark bridge listening on http://127.0.0.1:${PORT}`);
 });
+
+
+
 

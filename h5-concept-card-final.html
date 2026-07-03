@@ -631,6 +631,14 @@
     });
   }
 
+  function buildPreviewDemosFromRows(rows) {
+    const sourceRows = Array.isArray(rows) && rows.length ? rows : baseRows;
+    return sourceRows.map(cardFromBase).filter(isCompleteBaseCard);
+  }
+
+  function getPreviewDemoFromRows(rows, cardId) {
+    return buildPreviewDemosFromRows(rows).find((card) => card.id === String(cardId || "")) || null;
+  }
   function buildTasksFromDemos(demos) {
     return Array.from(new Map(demos.map((demo) => [demo.taskId, {
       id: demo.taskId,
@@ -777,33 +785,35 @@
   }
 
   function getTaskProgress(state, userId, taskId) {
+    const taskTotal = state.demos.filter((demo) => demo.taskId === taskId).length;
     const session = getActiveSession(state, userId, taskId) || [...state.sessions].reverse().find((item) => item.userId === userId && item.taskId === taskId);
     if (session) {
       const demos = session.demoIds.map((id) => state.demos.find((demo) => demo.id === id)).filter(Boolean);
       const answered = demos.filter((demo) => isDemoCompletedByUser(state, userId, demo)).length;
       const unanswered = Math.max(0, demos.length - answered);
+      const rewardTotal = Math.max(taskTotal, demos.length);
       return {
         total: demos.length,
         answered,
         unanswered,
         available: unanswered,
-        maxGrowth: unanswered * GROWTH_PER_CARD,
-        maxVitality: unanswered * VITALITY_PER_CARD,
+        maxGrowth: rewardTotal * GROWTH_PER_CARD,
+        maxVitality: rewardTotal * VITALITY_PER_CARD,
         complete: demos.length > 0 && answered === demos.length
       };
     }
     const available = getAvailableDemos(state, userId, taskId).length;
+    const rewardTotal = Math.max(taskTotal, available);
     return {
       total: available,
       answered: 0,
       unanswered: available,
       available,
-      maxGrowth: available * GROWTH_PER_CARD,
-      maxVitality: available * VITALITY_PER_CARD,
+      maxGrowth: rewardTotal * GROWTH_PER_CARD,
+      maxVitality: rewardTotal * VITALITY_PER_CARD,
       complete: available === 0
     };
   }
-
   function validateAnswer(question, value) {
     if (question.type === "choice") {
       return question.options.some((option) => option.id === value) ? "accepted" : "invalid-option";
@@ -887,6 +897,7 @@
     TARGET_ANSWERS,
     createSurveyState,
     createSurveyStateFromRows,
+    getPreviewDemoFromRows,
     getAvailableDemos,
     startTaskSession,
     getSessionDemos,
@@ -906,6 +917,7 @@
     const submitBridgeUrl = `${bridgeBaseUrl}/submit-answer`;
     const surveyDataUrl = `${bridgeBaseUrl}/survey-data`;
     const taskCardQuota = 10;
+    const previewCardId = new URLSearchParams(window.location.search).get("preview");
     const engine = window.SurveyEngine;
     const userId = "community-user-1024";
     const initialState = engine.createSurveyState();
@@ -917,6 +929,7 @@
     let pendingChoice = "";
     let pendingText = "";
     let isSubmittingAnswer = false;
+    let liveRows = [];
 
     const els = {
       home: document.getElementById("homeScreen"),
@@ -979,6 +992,7 @@
         const response = await fetch(`${surveyDataUrl}?t=${Date.now()}`);
         const result = await response.json().catch(() => ({}));
         if (!response.ok || !result.ok || !Array.isArray(result.rows)) throw new Error(result.error || "sync-failed");
+        liveRows = result.rows;
         state = mergeRuntimeState(engine.createSurveyStateFromRows(result.rows), state);
         syncSource = "base";
         save();
@@ -1103,6 +1117,7 @@
 
     function renderConcept(step) {
       const demo = step.demo;
+      const isPreview = Boolean(step.preview);
       const choice = demo.questions.find((question) => question.type === "choice");
       const feedback = demo.questions.find((question) => question.type === "text");
       els.conceptArea.classList.add("switching");
@@ -1123,18 +1138,23 @@
             <div class="question-box">
               <div class="question-block">
                 <h3 class="question-title">1. ${choice.text}</h3>
-                <div class="options">${choice.options.map((option) => `<button class="option" data-value="${option.id}"><span>${option.label}</span></button>`).join("")}</div>
+                <div class="options">${choice.options.map((option) => `<button class="option" data-value="${option.id}" ${isPreview ? "disabled" : ""}><span>${option.label}</span></button>`).join("")}</div>
               </div>
               <div class="question-block feedback-block">
                 <h3 class="question-title">2. ${feedback.text}</h3>
-                <textarea class="feedback-input" placeholder="${feedback.placeholder}" maxlength="120"></textarea>
+                <textarea class="feedback-input" placeholder="${feedback.placeholder}" maxlength="120" ${isPreview ? "disabled" : ""}></textarea>
               </div>
-              <button id="submitAnswer" class="submit-answer" disabled>提交</button>
+              <button id="submitAnswer" class="submit-answer" disabled>${isPreview ? "预览模式" : "提交"}</button>
             </div>
           </div>
         `;
         const submit = document.getElementById("submitAnswer");
         const textarea = els.conceptArea.querySelector("textarea");
+        if (isPreview) {
+          els.conceptArea.classList.remove("switching");
+          els.conceptArea.classList.add("settled");
+          return;
+        }
         const validate = () => {
           pendingText = textarea.value;
           submit.disabled = !pendingChoice || pendingText.trim().length < feedback.minLength;
@@ -1152,6 +1172,24 @@
         els.conceptArea.classList.remove("switching");
         els.conceptArea.classList.add("settled");
       }, 90);
+    }
+
+    function renderPreview(demo) {
+      currentTaskId = null;
+      currentSessionId = null;
+      currentStep = { demo, cardIndex: 0, preview: true };
+      pendingChoice = "";
+      pendingText = "";
+      isSubmittingAnswer = false;
+      els.surveyTopTitle.textContent = demo.brand || "概念卡预览";
+      els.taskHeroTitle.textContent = `${demo.category}概念卡预览`;
+      els.thumbs.innerHTML = `
+        <div class="answer-thumb current" style="--thumb-color:${demo.art.accent}">
+          <img class="thumb-bg" src="${demo.poster}" alt="" aria-hidden="true"><img class="thumb-image" src="${demo.poster}" alt="${demo.title}缩略图"><span>1</span>
+        </div>
+      `;
+      switchScreen("survey");
+      renderConcept(currentStep);
     }
 
     async function submitCurrentAnswer(choice, feedback) {
@@ -1251,9 +1289,24 @@
     els.ruleEntry.addEventListener("click", () => els.ruleModal.classList.add("open"));
     els.closeRule.addEventListener("click", () => els.ruleModal.classList.remove("open"));
     els.ruleModal.addEventListener("click", (event) => { if (event.target === els.ruleModal) els.ruleModal.classList.remove("open"); });
-    els.backHome.addEventListener("click", () => { renderHome(); switchScreen("home"); });
+    els.backHome.addEventListener("click", () => {
+      if (previewCardId) {
+        window.location.href = window.location.href.split("?")[0];
+        return;
+      }
+      renderHome();
+      switchScreen("home");
+    });
     async function initApp() {
       await syncSurveyData();
+      if (previewCardId) {
+        const previewDemo = engine.getPreviewDemoFromRows(liveRows, previewCardId);
+        if (previewDemo) {
+          renderPreview(previewDemo);
+          return;
+        }
+        showToast("预览卡片不存在或信息不完整");
+      }
       renderHome();
     }
 
@@ -1261,4 +1314,9 @@
   </script>
 </body>
 </html>
+
+
+
+
+
 
