@@ -205,6 +205,8 @@ async function createRecord(payload) {
   const posterAttachment = conceptCard?.posterAttachment || [];
   const fields = [
     "概念卡ID",
+    "赛道",
+    "品类",
     "社区用户ID",
     "奖励元气树数量",
     "元气树发放状态",
@@ -215,6 +217,8 @@ async function createRecord(payload) {
   ];
   const row = [
     payload.conceptCardId,
+    conceptCard?.track || "",
+    conceptCard?.category || "",
     payload.communityUserId,
     0,
     "未发放",
@@ -307,6 +311,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, "127.0.0.1", () => {
   console.log(`Lark bridge listening on http://127.0.0.1:${PORT}`);
 });
+
 
 
 
